@@ -458,6 +458,14 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             <div style={sectionHeaderStyle}><h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800' }}>LABEL</h2><p style={{ margin: '4px 0 0 0', fontSize: '13px', opacity: 0.85 }}>Confirm Understanding (30 sec)</p></div>
             <div style={tipBoxStyle}><strong>🎯 GOAL:</strong> Name their problem back to them. They must hear it and agree.</div>
 
+            <div style={scriptBoxStyle}>
+              <span style={labelStyle}>Transition Into Discovery</span>
+              <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                "Okay, amazing. So that I can give you the most tailored advice for {displayName(primaryChild)}, can I ask you a few questions about what's been going on?"
+              </p>
+            </div>
+            <div style={{ ...tipBoxStyle, background: colors.accent }}><strong>✓ Wait for "yes" / "of course" before asking questions</strong></div>
+
             <div style={{ ...scriptBoxStyle, borderLeft: `4px solid ${colors.primary}` }}>
               <span style={{ ...labelStyle, color: colors.primary }}>DISCOVERY Q1 - THE PROBLEM</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
