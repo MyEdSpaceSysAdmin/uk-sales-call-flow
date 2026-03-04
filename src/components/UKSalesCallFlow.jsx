@@ -182,6 +182,7 @@ export default function UKSalesCallFlow() {
   const [activeObjection, setActiveObjection] = useState(null);
   const [copied, setCopied] = useState(false);
   const [trialSection, setTrialSection] = useState('touches');
+  const [showTrialPricing, setShowTrialPricing] = useState(false);
   const [copiedTrial, setCopiedTrial] = useState(null);
   const copyTrialText = (id, text) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -348,7 +349,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
   return (
     <div style={{ fontFamily: 'Inter, sans-serif', background: colors.gray, minHeight: '100vh' }}>
       {/* Header — sticky */}
-      <div style={{ background: colors.dark, padding: '10px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: viewMode === 'trial' ? 'sticky' : 'static', top: viewMode === 'trial' ? 0 : 'auto', zIndex: 100 }}>
+      <div style={{ background: colors.dark, padding: '10px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <h1 style={{ margin: 0, color: colors.white, fontSize: '15px', fontWeight: '700', fontFamily: 'Inter, sans-serif' }}>MyEdSpace</h1>
           <div style={{ display: 'flex', background: '#2a2a3e', borderRadius: 0 }}>
@@ -360,6 +361,31 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
         {viewMode === 'sales' && <div style={{ display: 'flex', gap: '8px' }}>
           <button onClick={() => setIsPro(!isPro)} style={{ padding: '5px 12px', background: isPro ? colors.pro : 'transparent', color: isPro ? colors.white : '#ccc', border: `1px solid ${isPro ? colors.pro : '#555'}`, fontSize: '11px', fontWeight: '600', cursor: 'pointer', fontFamily: 'Inter, sans-serif', borderRadius: 0 }}>{isPro ? '⭐ PRO' : 'STANDARD'}</button>
           <button onClick={() => setCurrentStep('objections')} style={{ padding: '5px 12px', background: colors.warning, color: colors.white, border: 'none', fontSize: '11px', fontWeight: '600', cursor: 'pointer', fontFamily: 'Inter, sans-serif', borderRadius: 0 }}>OBJECTIONS</button>
+        </div>}
+        {viewMode === 'trial' && <div style={{ display: 'flex', gap: '8px', position: 'relative' }}>
+          <button onClick={() => setShowTrialPricing(!showTrialPricing)} style={{ padding: '5px 12px', background: showTrialPricing ? colors.success : 'transparent', color: showTrialPricing ? colors.white : '#ccc', border: `1px solid ${showTrialPricing ? colors.success : '#555'}`, fontSize: '11px', fontWeight: '600', cursor: 'pointer', fontFamily: 'Inter, sans-serif', borderRadius: 0 }}>PRICING</button>
+          <button onClick={() => setTrialSection(trialSection === 'objections' ? 'touches' : 'objections')} style={{ padding: '5px 12px', background: trialSection === 'objections' ? colors.warning : colors.warning, color: colors.white, border: 'none', fontSize: '11px', fontWeight: '600', cursor: 'pointer', fontFamily: 'Inter, sans-serif', borderRadius: 0 }}>OBJECTIONS</button>
+          {showTrialPricing && <div style={{ position: 'absolute', top: '36px', right: '0', width: '280px', background: colors.white, border: '1px solid #e0e0e0', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 200, fontFamily: 'Inter, sans-serif' }}>
+            <div style={{ background: colors.dark, padding: '10px 14px' }}>
+              <p style={{ margin: 0, fontSize: '11px', fontWeight: '700', color: colors.white, letterSpacing: '0.5px', textTransform: 'uppercase' }}>Pricing Reference</p>
+              <p style={{ margin: '2px 0 0 0', fontSize: '10px', color: '#aaa' }}>Ultimate Pass</p>
+            </div>
+            <div style={{ background: colors.accent, padding: '10px 14px', borderBottom: '1px solid #e0e0e0' }}>
+              <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', color: colors.dark }}>Annual Upfront — lead with this</p>
+              <p style={{ margin: '2px 0 0 0', fontSize: '20px', fontWeight: '800', color: colors.dark }}>£749.55</p>
+              <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: colors.darkGray }}>or 3 x £263 instalments</p>
+            </div>
+            <div style={{ padding: '8px 14px', borderBottom: '1px solid #f0f0f0' }}>
+              <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', color: colors.darkGray }}>3x Instalments</p>
+              <p style={{ margin: '2px 0 0 0', fontSize: '15px', fontWeight: '700' }}>£263 x 3</p>
+            </div>
+            <div style={{ padding: '8px 14px', borderBottom: '1px solid #f0f0f0' }}>
+              <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', color: colors.darkGray }}>Monthly — last resort</p>
+              <p style={{ margin: '2px 0 0 0', fontSize: '15px', fontWeight: '700' }}>£180/mo <span style={{ fontSize: '10px', fontWeight: '400', color: colors.darkGray }}>cancel anytime</span></p>
+            </div>
+            <div style={{ background: '#e8f5e9', padding: '8px 14px', fontSize: '11px', fontWeight: '600', color: colors.success }}>14-day money-back guarantee</div>
+            <div style={{ background: '#fff3e0', padding: '8px 14px', fontSize: '10px', color: colors.warning }}><strong>Single subject:</strong> TBC</div>
+          </div>}
         </div>}
       </div>
       {viewMode === 'sales' && <>
@@ -1059,38 +1085,32 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
       </div>
       </>}
       {viewMode === 'trial' && <>
-        {/* Trial Track Selector — sticky */}
-        <div style={{ background: colors.success, display: 'flex', position: 'sticky', top: '40px', zIndex: 90 }}>
-          {[
-            { id: 'A', label: 'TRACK A', desc: 'Never Logged In' },
-            { id: 'B1', label: 'TRACK B1', desc: 'Logged In, No Lesson' },
-            { id: 'B2', label: 'TRACK B2', desc: 'Attended 1+ Lessons' },
-          ].map(track => (
-            <button key={track.id} onClick={() => setSelectedTrack(track.id)} style={{ flex: 1, padding: '11px 8px', border: 'none', background: selectedTrack === track.id ? colors.accent : 'transparent', color: selectedTrack === track.id ? colors.dark : 'rgba(255,255,255,0.9)', cursor: 'pointer', fontSize: '12px', fontWeight: '600', fontFamily: 'Inter, sans-serif', textAlign: 'center' }}>
-              {track.label}<br /><span style={{ fontSize: '9px', fontWeight: '400', opacity: 0.85 }}>{track.desc}</span>
-            </button>
-          ))}
-        </div>
-        {/* Trial Section Tabs — sticky below track selector */}
-        <div style={{ background: '#f0f0f0', display: 'flex', borderBottom: '1px solid #ddd', position: 'sticky', top: '86px', zIndex: 89 }}>
-          {[
-            { id: 'touches', label: 'TOUCH SEQUENCE' },
-            { id: 'objections', label: 'OBJECTION HANDLING' },
-          ].map(sec => (
-            <button key={sec.id} onClick={() => setTrialSection(sec.id)} style={{ flex: 1, padding: '10px 8px', border: 'none', background: trialSection === sec.id ? colors.white : 'transparent', color: trialSection === sec.id ? colors.dark : colors.darkGray, cursor: 'pointer', fontSize: '11px', fontWeight: '700', fontFamily: 'Inter, sans-serif', textAlign: 'center', borderBottom: trialSection === sec.id ? `3px solid ${colors.success}` : '3px solid transparent' }}>{sec.label}</button>
-          ))}
-        </div>
-        {/* Trial content with pricing sidebar */}
-        <div style={{ display: 'flex', minHeight: 'calc(100vh - 130px)' }}>
-          {/* Main content */}
-          <div style={{ flex: 1, padding: '24px 20px', maxWidth: '800px' }}>
+        {/* Trial content — centered */}
+        <div style={{ maxWidth: '780px', margin: '0 auto', padding: '24px 20px' }}>
 
         {trialSection === 'touches' && <>
-          {/* Track descriptions */}
+          {/* Track selector — clean cards */}
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '24px' }}>
+            {[
+              { id: 'A', label: 'Never Logged In', color: colors.warning, icon: '!' },
+              { id: 'B1', label: 'Logged In, No Lesson', color: colors.primary, icon: '~' },
+              { id: 'B2', label: 'Attended — CLOSE', color: colors.success, icon: '\u2713' },
+            ].map(track => (
+              <button key={track.id} onClick={() => setSelectedTrack(track.id)} style={{ flex: 1, padding: '14px 12px', border: selectedTrack === track.id ? `2px solid ${track.color}` : '2px solid #e0e0e0', background: selectedTrack === track.id ? colors.white : '#fafafa', cursor: 'pointer', fontFamily: 'Inter, sans-serif', textAlign: 'left', borderRadius: 0, opacity: selectedTrack === track.id ? 1 : 0.6, transition: 'all 0.15s' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <span style={{ width: '22px', height: '22px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: selectedTrack === track.id ? track.color : '#ddd', color: colors.white, fontSize: '12px', fontWeight: '800', borderRadius: '50%' }}>{track.icon}</span>
+                  <span style={{ fontSize: '13px', fontWeight: '700', color: selectedTrack === track.id ? track.color : colors.darkGray }}>Track {track.id}</span>
+                </div>
+                <span style={{ fontSize: '11px', color: colors.darkGray, lineHeight: '1.3' }}>{track.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Track description */}
           <div style={{ ...tipBoxStyle, background: selectedTrack === 'A' ? '#fff3e0' : selectedTrack === 'B1' ? '#e3f2fd' : '#e8f5e9', borderLeft: `4px solid ${selectedTrack === 'A' ? colors.warning : selectedTrack === 'B1' ? colors.primary : colors.success}`, marginBottom: '20px' }}>
-            {selectedTrack === 'A' && <><strong>Track A — Never Logged In.</strong> Student hasn't logged in. Automation owns Days 1–5. Rep escalates Day 5+.</>}
-            {selectedTrack === 'B1' && <><strong>Track B1 — Logged In, No Lesson.</strong> Logged in but no lesson attended. Get them into a class before closing on price.</>}
-            {selectedTrack === 'B2' && <><strong>Track B2 — Attended 1+ Lessons.</strong> Behavioural hooks are active. Lead with annual upfront. The sale starts when they object.</>}
+            {selectedTrack === 'A' && <>Student hasn't logged in. Automation owns Days 1–5. Rep escalates Day 5+.</>}
+            {selectedTrack === 'B1' && <>Logged in but no lesson attended. Get them into a class before closing on price.</>}
+            {selectedTrack === 'B2' && <>Behavioural hooks are active. Lead with annual upfront. The sale starts when they object.</>}
           </div>
 
           {/* TRACK A TOUCHES */}
@@ -1523,36 +1543,6 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             </p>
           </div>
         </>}
-          </div>
-          {/* Pricing sidebar — always visible */}
-          <div style={{ width: '260px', flexShrink: 0, background: colors.white, borderLeft: '1px solid #e0e0e0', padding: '16px', position: 'sticky', top: '126px', alignSelf: 'flex-start', height: 'fit-content' }}>
-            <div style={{ background: colors.dark, padding: '10px 14px', marginBottom: '12px' }}>
-              <p style={{ margin: 0, fontSize: '11px', fontWeight: '700', color: colors.white, letterSpacing: '0.5px', textTransform: 'uppercase' }}>Pricing Reference</p>
-              <p style={{ margin: '2px 0 0 0', fontSize: '10px', color: '#aaa' }}>Ultimate Pass</p>
-            </div>
-            <div style={{ marginBottom: '14px' }}>
-              <div style={{ background: colors.accent, padding: '10px 12px', marginBottom: '1px' }}>
-                <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', color: colors.dark }}>Annual Upfront</p>
-                <p style={{ margin: '2px 0 0 0', fontSize: '18px', fontWeight: '800', color: colors.dark }}>£749.55</p>
-                <p style={{ margin: '2px 0 0 0', fontSize: '10px', color: colors.darkGray }}>or 3 x £263</p>
-              </div>
-              <div style={{ background: '#f5f5f5', padding: '8px 12px', marginBottom: '1px' }}>
-                <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', color: colors.darkGray }}>3x Instalments</p>
-                <p style={{ margin: '2px 0 0 0', fontSize: '15px', fontWeight: '700' }}>£263 x 3</p>
-              </div>
-              <div style={{ background: '#f5f5f5', padding: '8px 12px' }}>
-                <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', color: colors.darkGray }}>Monthly</p>
-                <p style={{ margin: '2px 0 0 0', fontSize: '15px', fontWeight: '700' }}>£180/mo</p>
-                <p style={{ margin: '2px 0 0 0', fontSize: '10px', color: colors.darkGray }}>Cancel anytime. Last resort.</p>
-              </div>
-            </div>
-            <div style={{ background: '#e8f5e9', padding: '8px 12px', fontSize: '11px', fontWeight: '600', color: colors.success }}>
-              14-day money-back guarantee
-            </div>
-            <div style={{ background: '#fff3e0', padding: '8px 12px', marginTop: '8px', fontSize: '10px', color: colors.warning }}>
-              <strong>Single subject:</strong> TBC
-            </div>
-          </div>
         </div>
       </>}
     </div>
