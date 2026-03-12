@@ -168,8 +168,10 @@ const subjectsByYear = {
 };
 const yearGroups = ['Year 5', 'Year 6', 'Year 7', 'Year 8', 'Year 9', 'Year 10', 'Year 11', 'Year 12', 'Year 13', 'Other'];
 const emptyChild = { name: '', yearGroup: '', subjects: [] };
-export default function UKSalesCallFlow() {
-  const [viewMode, setViewMode] = useState('sales');
+export default function UKSalesCallFlow({ viewMode: viewModeProp, topOffset = 0 }) {
+  const [viewModeInternal, setViewModeInternal] = useState('sales');
+  const viewMode = viewModeProp !== undefined ? viewModeProp : viewModeInternal;
+  const setViewMode = viewModeProp !== undefined ? () => {} : setViewModeInternal;
   const [selectedTrack, setSelectedTrack] = useState('A');
   const [currentStep, setCurrentStep] = useState('open');
   const [children, setChildren] = useState([{ ...emptyChild }]);
@@ -356,13 +358,15 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
   return (
     <div style={{ fontFamily: 'Inter, sans-serif', background: colors.gray, minHeight: '100vh' }}>
       {/* Header — sticky */}
-      <div style={{ background: colors.dark, padding: '10px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
+      <div style={{ background: colors.dark, padding: '10px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: topOffset, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <h1 style={{ margin: 0, color: colors.white, fontSize: '15px', fontWeight: '700', fontFamily: 'Inter, sans-serif' }}>MyEdSpace</h1>
-          <div style={{ display: 'flex', background: '#2a2a3e', borderRadius: 0 }}>
-            <button onClick={() => setViewMode('sales')} style={{ padding: '5px 14px', background: viewMode === 'sales' ? colors.primary : 'transparent', color: viewMode === 'sales' ? colors.white : '#aaa', border: 'none', fontSize: '11px', fontWeight: '700', cursor: 'pointer', fontFamily: 'Inter, sans-serif', borderRadius: 0 }}>SALES CALL</button>
-            <button onClick={() => setViewMode('trial')} style={{ padding: '5px 14px', background: viewMode === 'trial' ? colors.success : 'transparent', color: viewMode === 'trial' ? colors.white : '#aaa', border: 'none', fontSize: '11px', fontWeight: '700', cursor: 'pointer', fontFamily: 'Inter, sans-serif', borderRadius: 0 }}>TRIAL CONVERSION</button>
-          </div>
+          {viewModeProp === undefined && (
+            <div style={{ display: 'flex', background: '#2a2a3e', borderRadius: 0 }}>
+              <button onClick={() => setViewMode('sales')} style={{ padding: '5px 14px', background: viewMode === 'sales' ? colors.primary : 'transparent', color: viewMode === 'sales' ? colors.white : '#aaa', border: 'none', fontSize: '11px', fontWeight: '700', cursor: 'pointer', fontFamily: 'Inter, sans-serif', borderRadius: 0 }}>SALES CALL</button>
+              <button onClick={() => setViewMode('trial')} style={{ padding: '5px 14px', background: viewMode === 'trial' ? colors.success : 'transparent', color: viewMode === 'trial' ? colors.white : '#aaa', border: 'none', fontSize: '11px', fontWeight: '700', cursor: 'pointer', fontFamily: 'Inter, sans-serif', borderRadius: 0 }}>TRIAL CONVERSION</button>
+            </div>
+          )}
           {viewMode === 'sales' && <button onClick={clearAll} style={{ padding: '4px 10px', background: 'transparent', color: '#888', border: '1px solid #555', fontSize: '10px', fontWeight: '600', cursor: 'pointer', fontFamily: 'Inter, sans-serif', borderRadius: 0 }}>⟲ CLEAR</button>}
         </div>
         {viewMode === 'sales' && <div style={{ display: 'flex', gap: '8px' }}>
