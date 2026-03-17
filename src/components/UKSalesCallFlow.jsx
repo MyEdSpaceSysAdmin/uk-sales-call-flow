@@ -1183,7 +1183,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                   <br /><br />
                   <strong>Either way:</strong> "Teaching quality matters more than class size. Better to learn from a top 1% teacher in a group than a mediocre tutor 1-to-1."
                   <br /><br />
-                  <strong style={{ color: colors.pro }}>If they still want more attention:</strong> "We do have a <strong>Pro package</strong> with priority support and extra features. I can tell you more about that if you'd like?"
+                  <strong style={{ color: colors.pro }}>If they still want more attention:</strong> "We do have a <strong>Pro package</strong> which includes 1-to-1 mentor support via WhatsApp for any subject questions outside of lessons. I can tell you more about that if you'd like?"
                 </p>
               </div>
             )}
