@@ -114,36 +114,26 @@ const getLessonsForYearGroup = (yg, subjectCount, isMultiYear) => {
   return perSubject * subjectCount;
 };
 const getOriginalPrice = (yg, subjectCount, isMultiYear) => {
-  const tier = subjectCount >= 3 ? 'ultimate' : subjectCount;
+  // Standard monthly prices: 1 sub = £80, 2 sub = £144, 3+ = £180
+  const monthly = subjectCount >= 3 ? 180 : subjectCount === 2 ? 144 : 80;
+  // March: Year 11/13 = 3 months (Mar-May), others = 4 months (Mar-Jun)
+  const monthsRemaining = ['Year 11', 'Year 13'].includes(yg) ? 3 : 4;
   if (isMultiYear) {
-    // Table 5: Standard Multi-Year originals
-    const isY10Y11Y12 = ['Year 10', 'Year 11', 'Year 12'].includes(yg);
-    if (tier === 1) return isY10Y11Y12 ? 1200 : 1280;
-    if (tier === 2) return isY10Y11Y12 ? 2160 : 2304;
-    return isY10Y11Y12 ? 2700 : 2880;
-  } else {
-    // Table 3: Standard Current Year originals
-    const isY11Y13 = ['Year 11', 'Year 13'].includes(yg);
-    if (tier === 1) return isY11Y13 ? 400 : 480;
-    if (tier === 2) return isY11Y13 ? 720 : 864;
-    return isY11Y13 ? 900 : 1080;
+    // Months remaining this year + 9 months next year (Sep-May)
+    return monthly * (monthsRemaining + 9);
   }
+  return monthly * monthsRemaining;
 };
 const getProOriginalPrice = (yg, subjectCount, isMultiYear) => {
-  const tier = subjectCount >= 3 ? 'ultimate' : subjectCount;
+  // Pro monthly prices: 1 sub = £110, 2 sub = £198, 3+ = £240
+  const monthly = subjectCount >= 3 ? 240 : subjectCount === 2 ? 198 : 110;
+  // March: Year 11/13 = 3 months (Mar-May), others = 4 months (Mar-Jun)
+  const monthsRemaining = ['Year 11', 'Year 13'].includes(yg) ? 3 : 4;
   if (isMultiYear) {
-    // Table 9: Pro Multi-Year originals
-    const isY10Y11Y12 = ['Year 10', 'Year 11', 'Year 12'].includes(yg);
-    if (tier === 1) return isY10Y11Y12 ? 1650 : 1760;
-    if (tier === 2) return isY10Y11Y12 ? 2970 : 3168;
-    return isY10Y11Y12 ? 3600 : 3840;
-  } else {
-    // Table 7: Pro Current Year originals
-    const isY11Y13 = ['Year 11', 'Year 13'].includes(yg);
-    if (tier === 1) return isY11Y13 ? 550 : 660;
-    if (tier === 2) return isY11Y13 ? 990 : 1188;
-    return isY11Y13 ? 1200 : 1440;
+    // Months remaining this year + 9 months next year (Sep-May)
+    return monthly * (monthsRemaining + 9);
   }
+  return monthly * monthsRemaining;
 };
 const standardPricing = {
   currentYear: { 1: { annual: 269 }, 2: { annual: 484.20 }, ultimate: { annual: 639 } },
