@@ -116,8 +116,8 @@ const getLessonsForYearGroup = (yg, subjectCount, isMultiYear) => {
 const getOriginalPrice = (yg, subjectCount, isMultiYear) => {
   // Standard monthly prices: 1 sub = £80, 2 sub = £144, 3+ = £180
   const monthly = subjectCount >= 3 ? 180 : subjectCount === 2 ? 144 : 80;
-  // March: Year 11/13 = 3 months (Mar-May), others = 4 months (Mar-Jun)
-  const monthsRemaining = ['Year 11', 'Year 13'].includes(yg) ? 3 : 4;
+  // April: Year 11/13 = 2 months (Apr-May), others = 3 months (Apr-Jun)
+  const monthsRemaining = ['Year 11', 'Year 13'].includes(yg) ? 2 : 3;
   if (isMultiYear) {
     // Months remaining this year + 9 months next year (Sep-May)
     return monthly * (monthsRemaining + 9);
@@ -127,8 +127,8 @@ const getOriginalPrice = (yg, subjectCount, isMultiYear) => {
 const getProOriginalPrice = (yg, subjectCount, isMultiYear) => {
   // Pro monthly prices: 1 sub = £110, 2 sub = £198, 3+ = £240
   const monthly = subjectCount >= 3 ? 240 : subjectCount === 2 ? 198 : 110;
-  // March: Year 11/13 = 3 months (Mar-May), others = 4 months (Mar-Jun)
-  const monthsRemaining = ['Year 11', 'Year 13'].includes(yg) ? 3 : 4;
+  // April: Year 11/13 = 2 months (Apr-May), others = 3 months (Apr-Jun)
+  const monthsRemaining = ['Year 11', 'Year 13'].includes(yg) ? 2 : 3;
   if (isMultiYear) {
     // Months remaining this year + 9 months next year (Sep-May)
     return monthly * (monthsRemaining + 9);
@@ -136,13 +136,13 @@ const getProOriginalPrice = (yg, subjectCount, isMultiYear) => {
   return monthly * monthsRemaining;
 };
 const standardPricing = {
-  currentYear: { 1: { annual: 269 }, 2: { annual: 484.20 }, ultimate: { annual: 639 } },
-  multiYear: { 1: { annual: 639 }, 2: { annual: 1150.20 }, ultimate: { annual: 1519 } },
+  currentYear: { 1: { annual: 219 }, 2: { annual: 394.20 }, ultimate: { annual: 539 } },
+  multiYear: { 1: { annual: 619 }, 2: { annual: 1114.20 }, ultimate: { annual: 1469 } },
   monthly: { 1: 80, 2: 144, ultimate: 180 },
 };
 const proPricing = {
-  currentYear: { 1: { annual: 369 }, 2: { annual: 664.20 }, ultimate: { annual: 809 } },
-  multiYear: { 1: { annual: 929 }, 2: { annual: 1672.20 }, ultimate: { annual: 1899 } },
+  currentYear: { 1: { annual: 369 }, 2: { annual: 664.20 }, ultimate: { annual: 669 } },
+  multiYear: { 1: { annual: 889 }, 2: { annual: 1600.20 }, ultimate: { annual: 1869 } },
   monthly: { 1: 110, 2: 198, ultimate: 240 },
 };
 const subjectsByYear = {
@@ -1027,10 +1027,10 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                       return (multiYearPricing[subjectKey]?.annual / 3).toFixed(2);
                     })()} each
                     <br />
-                    <strong>6 instalments:</strong> £{(() => {
+                    <strong>5 instalments:</strong> £{(() => {
                       const multiYearPricing = isPro ? proPricing.multiYear : standardPricing.multiYear;
                       const subjectKey = primaryPricing.subjectCount === 1 ? 1 : primaryPricing.subjectCount === 2 ? 2 : 'ultimate';
-                      return (multiYearPricing[subjectKey]?.annual / 6).toFixed(2);
+                      return (multiYearPricing[subjectKey]?.annual / 5).toFixed(2);
                     })()} each
                     <br />
                     <strong style={{ color: colors.success }}>Upfront (5% off):</strong> £{(() => {
