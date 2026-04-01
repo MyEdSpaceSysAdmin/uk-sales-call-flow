@@ -259,7 +259,7 @@ export default function UKSalesCallFlow() {
 
     return {
       annual, original, lessons, monthly: monthlyPrice,
-      instalments3: (annual / 3).toFixed(2), upfront: (annual * 0.95).toFixed(2),
+      instalments3: (annual / 2).toFixed(2), upfront: (annual * 0.95).toFixed(2),
       phonePrice: phoneDiscount.toFixed(2), saving: (original - annual).toFixed(0),
       phoneSaving: (original - phoneDiscount).toFixed(0), pricePerHour: (annual / lessons).toFixed(2),
       subjectCount, lessonsPerMonth: subjectCount * 8, tutorCost: subjectCount * 8 * 50, isMultiYear: multi,
@@ -278,7 +278,7 @@ export default function UKSalesCallFlow() {
       totalMonthly,
       monthlyBreakdown: monthlyPrices.map((p, i) => ({ ...p, discounted: i > 0, finalMonthly: i === 0 ? p.monthly : p.monthly * 0.8 })),
       breakdown: prices.map((p, i) => ({ ...p, discounted: i > 0, finalPrice: i === 0 ? p.annual : p.annual * 0.8 })),
-      instalments3: (total / 3).toFixed(2), upfront: (total * 0.95).toFixed(2),
+      instalments3: (total / 2).toFixed(2), upfront: (total * 0.95).toFixed(2),
     };
   };
   const getTeacherInfo = (child) => {
@@ -485,8 +485,8 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
 
                   {sectionRow('Payment Options')}
                   <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
-                    <td style={tdLabel}>3x Instalments</td>
-                    {tiers.map(t => <td key={t.tier} style={tdVal}>£{(pricing.currentYear[t.tier].annual / 3).toFixed(2)}</td>)}
+                    <td style={tdLabel}>2x Instalments</td>
+                    {tiers.map(t => <td key={t.tier} style={tdVal}>£{(pricing.currentYear[t.tier].annual / 2).toFixed(2)}</td>)}
                   </tr>
                   <tr style={{ borderBottom: '1px solid #f0f0f0', background: '#fafafa' }}>
                     <td style={tdLabel}>3x (Multi-Year)</td>
@@ -591,7 +591,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             <div style={{ background: isPro ? '#f3e8ff' : colors.lightBlue, padding: '10px', borderRadius: 0, marginTop: '12px' }}>
               <span style={{ ...sidebarLabelStyle, color: isPro ? colors.pro : colors.primary, marginTop: 0 }}>PRICING {isPro && '(PRO)'}</span>
               <p style={{ margin: '4px 0', fontSize: '18px', fontWeight: '700', color: colors.dark }}>£{hasSiblings ? priceInfo.total?.toFixed(2) : primaryPricing.annual}</p>
-              <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>3x £{hasSiblings ? priceInfo.instalments3 : primaryPricing.instalments3} instalments</p>
+              <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>2x £{hasSiblings ? priceInfo.instalments3 : primaryPricing.instalments3} instalments</p>
               <p style={{ margin: '4px 0', fontSize: '11px', color: colors.success, fontWeight: '600' }}>Upfront (5% off): £{hasSiblings ? priceInfo.upfront : primaryPricing.upfront}</p>
               <p style={{ margin: '4px 0', fontSize: '11px', color: colors.darkGray }}>£{primaryPricing.pricePerHour}/lesson vs £50 tutor</p>
               <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>Monthly: £{primaryPricing.monthly}/mo</p>
@@ -917,7 +917,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             <div style={{ ...scriptBoxStyle, background: colors.accent, marginTop: '20px' }}>
               <span style={{ ...labelStyle, color: colors.dark }}>IF YES → PAYMENT OPTIONS (A/B Close)</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                "Perfect! Would you prefer to <strong>pay upfront and save an extra 5%</strong> - that's <strong>£{hasSiblings ? priceInfo.upfront : primaryPricing.upfront}</strong> - or <strong>split it into 3 monthly instalments</strong> of £{hasSiblings ? priceInfo.instalments3 : primaryPricing.instalments3}?"
+                "Perfect! Would you prefer to <strong>pay upfront and save an extra 5%</strong> - that's <strong>£{hasSiblings ? priceInfo.upfront : primaryPricing.upfront}</strong> - or <strong>split it into 2 monthly instalments</strong> of £{hasSiblings ? priceInfo.instalments3 : primaryPricing.instalments3}?"
               </p>
             </div>
             {isMultiYear(primaryChild.yearGroup) && (
@@ -944,10 +944,10 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                       return isPro ? getProOriginalPrice(primaryChild.yearGroup, subjectCount, false) : getOriginalPrice(primaryChild.yearGroup, subjectCount, false);
                     })()})</span>
                     <br />
-                    <strong>3 instalments:</strong> £{(() => {
+                    <strong>2 instalments:</strong> £{(() => {
                       const currentYearPricing = isPro ? proPricing.currentYear : standardPricing.currentYear;
                       const subjectKey = primaryPricing.subjectCount === 1 ? 1 : primaryPricing.subjectCount === 2 ? 2 : 'ultimate';
-                      return (currentYearPricing[subjectKey]?.annual / 3).toFixed(2);
+                      return (currentYearPricing[subjectKey]?.annual / 2).toFixed(2);
                     })()} each
                     <br />
                     <strong style={{ color: colors.success }}>Upfront (5% off):</strong> £{(() => {
