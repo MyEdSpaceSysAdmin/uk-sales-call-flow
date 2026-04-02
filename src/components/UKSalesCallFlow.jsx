@@ -116,24 +116,20 @@ const getLessonsForYearGroup = (yg, subjectCount, isMultiYear) => {
 const getOriginalPrice = (yg, subjectCount, isMultiYear) => {
   // Standard monthly prices: 1 sub = £80, 2 sub = £144, 3+ = £180
   const monthly = subjectCount >= 3 ? 180 : subjectCount === 2 ? 144 : 80;
-  // April: Year 11/13 = 2 months (Apr-May), others = 3 months (Apr-Jun)
-  const monthsRemaining = ['Year 11', 'Year 13'].includes(yg) ? 2 : 3;
+  // Full academic year value (10 months Sept-June)
   if (isMultiYear) {
-    // Months remaining this year + 9 months next year (Sep-May)
-    return monthly * (monthsRemaining + 9);
+    return monthly * 10 * 2;
   }
-  return monthly * monthsRemaining;
+  return monthly * 10;
 };
 const getProOriginalPrice = (yg, subjectCount, isMultiYear) => {
   // Pro monthly prices: 1 sub = £110, 2 sub = £198, 3+ = £240
   const monthly = subjectCount >= 3 ? 240 : subjectCount === 2 ? 198 : 110;
-  // April: Year 11/13 = 2 months (Apr-May), others = 3 months (Apr-Jun)
-  const monthsRemaining = ['Year 11', 'Year 13'].includes(yg) ? 2 : 3;
+  // Full academic year value (10 months Sept-June)
   if (isMultiYear) {
-    // Months remaining this year + 9 months next year (Sep-May)
-    return monthly * (monthsRemaining + 9);
+    return monthly * 10 * 2;
   }
-  return monthly * monthsRemaining;
+  return monthly * 10;
 };
 const standardPricing = {
   currentYear: { 1: { annual: 219 }, 2: { annual: 394.20 }, ultimate: { annual: 539 } },
@@ -876,17 +872,17 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                       <span key={i}><strong>{children[i].name || `Child ${i + 1}`}:</strong> £{p.finalPrice.toFixed(2)} {p.discounted && <span style={{ color: colors.success }}>(20% off)</span>}<br /></span>
                     ))}
                     <br />
-                    Normally this would be <strong>£{(priceInfo.total / 0.665).toFixed(0)}</strong> for the full {isMultiYear(primaryChild.yearGroup) ? 'two-year ' : ''}course...
+                    The full year's programme is valued at <strong>£{(priceInfo.total / 0.665).toFixed(0)}</strong> — and even though you're joining partway through, your children still get access to every recorded lesson from the start of the year. So they can catch up on anything they've missed from day one.
                     <br /><br />
-                    But right now you're getting it for just <strong>£{priceInfo.total.toFixed(2)}</strong> - that's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
+                    Because you're coming in partway through, it's just <strong>£{priceInfo.total.toFixed(2)}</strong> — that's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
                   </>
                 ) : (
                   <>
-                    Normally this would be <strong>£{primaryPricing.original}</strong> for the full {isMultiYear(primaryChild.yearGroup) ? 'two-year ' : ''}course...
+                    The full year's programme is valued at <strong>£{primaryPricing.original}</strong> — and even though you're joining partway through, {displayName(primaryChild)} still gets access to every recorded lesson from the start of the year. So they can catch up on anything they've missed from day one.
                     <br /><br />
-                    But right now you're getting it for just <strong>£{primaryPricing.annual}</strong> - saving over £{primaryPricing.saving}.
+                    Because you're coming in partway through, it's just <strong>£{primaryPricing.annual}</strong> — saving you over £{primaryPricing.saving}.
                     <br /><br />
-                    That works out to <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
+                    That's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
                   </>
                 )}
               </p>
