@@ -875,7 +875,9 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                     <br />
                     The full year's programme is valued at <strong>£{priceInfo.totalOriginal}</strong> — and even though you're joining partway through, your children still get access to every recorded lesson from the start of the year. So they can catch up on anything they've missed from day one.
                     <br /><br />
-                    Because you're coming in partway through, it's just <strong>£{priceInfo.total.toFixed(2)}</strong> — that's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
+                    Because you're coming in partway through, it's just <strong>£{priceInfo.total.toFixed(2)}</strong> — saving you over £{(priceInfo.totalOriginal - priceInfo.total).toFixed(0)}.
+                    <br /><br />
+                    That's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
                   </>
                 ) : (
                   <>
