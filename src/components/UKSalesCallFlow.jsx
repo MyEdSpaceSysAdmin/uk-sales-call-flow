@@ -114,45 +114,31 @@ const getLessonsForYearGroup = (yg, subjectCount, isMultiYear) => {
   return perSubject * subjectCount;
 };
 const getOriginalPrice = (yg, subjectCount, isMultiYear) => {
-  const tier = subjectCount >= 3 ? 'ultimate' : subjectCount;
+  // Standard monthly prices: 1 sub = £80, 2 sub = £144, 3+ = £180
+  const monthly = subjectCount >= 3 ? 180 : subjectCount === 2 ? 144 : 80;
+  // Full academic year value (10 months Sept-June)
   if (isMultiYear) {
-    // Table 5: Standard Multi-Year originals
-    const isY10Y11Y12 = ['Year 10', 'Year 11', 'Year 12'].includes(yg);
-    if (tier === 1) return isY10Y11Y12 ? 1200 : 1280;
-    if (tier === 2) return isY10Y11Y12 ? 2160 : 2304;
-    return isY10Y11Y12 ? 2700 : 2880;
-  } else {
-    // Table 3: Standard Current Year originals
-    const isY11Y13 = ['Year 11', 'Year 13'].includes(yg);
-    if (tier === 1) return isY11Y13 ? 400 : 480;
-    if (tier === 2) return isY11Y13 ? 720 : 864;
-    return isY11Y13 ? 900 : 1080;
+    return monthly * 10 * 2;
   }
+  return monthly * 10;
 };
 const getProOriginalPrice = (yg, subjectCount, isMultiYear) => {
-  const tier = subjectCount >= 3 ? 'ultimate' : subjectCount;
+  // Pro monthly prices: 1 sub = £110, 2 sub = £198, 3+ = £240
+  const monthly = subjectCount >= 3 ? 240 : subjectCount === 2 ? 198 : 110;
+  // Full academic year value (10 months Sept-June)
   if (isMultiYear) {
-    // Table 9: Pro Multi-Year originals
-    const isY10Y11Y12 = ['Year 10', 'Year 11', 'Year 12'].includes(yg);
-    if (tier === 1) return isY10Y11Y12 ? 1650 : 1760;
-    if (tier === 2) return isY10Y11Y12 ? 2970 : 3168;
-    return isY10Y11Y12 ? 3600 : 3840;
-  } else {
-    // Table 7: Pro Current Year originals
-    const isY11Y13 = ['Year 11', 'Year 13'].includes(yg);
-    if (tier === 1) return isY11Y13 ? 550 : 660;
-    if (tier === 2) return isY11Y13 ? 990 : 1188;
-    return isY11Y13 ? 1200 : 1440;
+    return monthly * 10 * 2;
   }
+  return monthly * 10;
 };
 const standardPricing = {
-  currentYear: { 1: { annual: 269 }, 2: { annual: 484.20 }, ultimate: { annual: 639 } },
-  multiYear: { 1: { annual: 639 }, 2: { annual: 1150.20 }, ultimate: { annual: 1519 } },
+  currentYear: { 1: { annual: 219 }, 2: { annual: 394.20 }, ultimate: { annual: 539 } },
+  multiYear: { 1: { annual: 619 }, 2: { annual: 1114.20 }, ultimate: { annual: 1469 } },
   monthly: { 1: 80, 2: 144, ultimate: 180 },
 };
 const proPricing = {
-  currentYear: { 1: { annual: 369 }, 2: { annual: 664.20 }, ultimate: { annual: 809 } },
-  multiYear: { 1: { annual: 929 }, 2: { annual: 1672.20 }, ultimate: { annual: 1899 } },
+  currentYear: { 1: { annual: 369 }, 2: { annual: 664.20 }, ultimate: { annual: 669 } },
+  multiYear: { 1: { annual: 889 }, 2: { annual: 1600.20 }, ultimate: { annual: 1869 } },
   monthly: { 1: 110, 2: 198, ultimate: 240 },
 };
 const subjectsByYear = {
@@ -269,7 +255,7 @@ export default function UKSalesCallFlow() {
 
     return {
       annual, original, lessons, monthly: monthlyPrice,
-      instalments3: (annual / 3).toFixed(2), upfront: (annual * 0.95).toFixed(2),
+      instalments3: (annual / 2).toFixed(2), upfront: (annual * 0.95).toFixed(2),
       phonePrice: phoneDiscount.toFixed(2), saving: (original - annual).toFixed(0),
       phoneSaving: (original - phoneDiscount).toFixed(0), pricePerHour: (annual / lessons).toFixed(2),
       subjectCount, lessonsPerMonth: subjectCount * 8, tutorCost: subjectCount * 8 * 50, isMultiYear: multi,
@@ -283,12 +269,13 @@ export default function UKSalesCallFlow() {
     const total = fullPrice + discountedPrices.reduce((a, b) => a + b, 0);
     const monthlyPrices = children.map(c => ({ ...getPricing(c), childName: c.name })).sort((a, b) => b.monthly - a.monthly);
     const totalMonthly = monthlyPrices[0].monthly + monthlyPrices.slice(1).reduce((acc, p) => acc + p.monthly * 0.8, 0);
+    const totalOriginal = prices.reduce((acc, p) => acc + p.original, 0);
     return {
-      total, phoneTotal: (total * 0.95).toFixed(2),
+      total, totalOriginal, phoneTotal: (total * 0.95).toFixed(2),
       totalMonthly,
       monthlyBreakdown: monthlyPrices.map((p, i) => ({ ...p, discounted: i > 0, finalMonthly: i === 0 ? p.monthly : p.monthly * 0.8 })),
       breakdown: prices.map((p, i) => ({ ...p, discounted: i > 0, finalPrice: i === 0 ? p.annual : p.annual * 0.8 })),
-      instalments3: (total / 3).toFixed(2), upfront: (total * 0.95).toFixed(2),
+      instalments3: (total / 2).toFixed(2), upfront: (total * 0.95).toFixed(2),
     };
   };
   const getTeacherInfo = (child) => {
@@ -495,8 +482,8 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
 
                   {sectionRow('Payment Options')}
                   <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
-                    <td style={tdLabel}>3x Instalments</td>
-                    {tiers.map(t => <td key={t.tier} style={tdVal}>£{(pricing.currentYear[t.tier].annual / 3).toFixed(2)}</td>)}
+                    <td style={tdLabel}>2x Instalments</td>
+                    {tiers.map(t => <td key={t.tier} style={tdVal}>£{(pricing.currentYear[t.tier].annual / 2).toFixed(2)}</td>)}
                   </tr>
                   <tr style={{ borderBottom: '1px solid #f0f0f0', background: '#fafafa' }}>
                     <td style={tdLabel}>3x (Multi-Year)</td>
@@ -601,7 +588,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             <div style={{ background: isPro ? '#f3e8ff' : colors.lightBlue, padding: '10px', borderRadius: 0, marginTop: '12px' }}>
               <span style={{ ...sidebarLabelStyle, color: isPro ? colors.pro : colors.primary, marginTop: 0 }}>PRICING {isPro && '(PRO)'}</span>
               <p style={{ margin: '4px 0', fontSize: '18px', fontWeight: '700', color: colors.dark }}>£{hasSiblings ? priceInfo.total?.toFixed(2) : primaryPricing.annual}</p>
-              <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>3x £{hasSiblings ? priceInfo.instalments3 : primaryPricing.instalments3} instalments</p>
+              <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>2x £{hasSiblings ? priceInfo.instalments3 : primaryPricing.instalments3} instalments</p>
               <p style={{ margin: '4px 0', fontSize: '11px', color: colors.success, fontWeight: '600' }}>Upfront (5% off): £{hasSiblings ? priceInfo.upfront : primaryPricing.upfront}</p>
               <p style={{ margin: '4px 0', fontSize: '11px', color: colors.darkGray }}>£{primaryPricing.pricePerHour}/lesson vs £50 tutor</p>
               <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>Monthly: £{primaryPricing.monthly}/mo</p>
@@ -886,17 +873,19 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                       <span key={i}><strong>{children[i].name || `Child ${i + 1}`}:</strong> £{p.finalPrice.toFixed(2)} {p.discounted && <span style={{ color: colors.success }}>(20% off)</span>}<br /></span>
                     ))}
                     <br />
-                    Normally this would be <strong>£{(priceInfo.total / 0.665).toFixed(0)}</strong> for the full {isMultiYear(primaryChild.yearGroup) ? 'two-year ' : ''}course...
+                    The full year's programme is valued at <strong>£{priceInfo.totalOriginal}</strong> — and even though you're joining partway through, your children still get access to every recorded lesson from the start of the year. So they can catch up on anything they've missed from day one.
                     <br /><br />
-                    But right now you're getting it for just <strong>£{priceInfo.total.toFixed(2)}</strong> - that's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
+                    Because you're coming in partway through, it's just <strong>£{priceInfo.total.toFixed(2)}</strong> — saving you over £{(priceInfo.totalOriginal - priceInfo.total).toFixed(0)}.
+                    <br /><br />
+                    That's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
                   </>
                 ) : (
                   <>
-                    Normally this would be <strong>£{primaryPricing.original}</strong> for the full {isMultiYear(primaryChild.yearGroup) ? 'two-year ' : ''}course...
+                    The full year's programme is valued at <strong>£{primaryPricing.original}</strong> — and even though you're joining partway through, {displayName(primaryChild)} still gets access to every recorded lesson from the start of the year. So they can catch up on anything they've missed from day one.
                     <br /><br />
-                    But right now you're getting it for just <strong>£{primaryPricing.annual}</strong> - saving over £{primaryPricing.saving}.
+                    Because you're coming in partway through, it's just <strong>£{primaryPricing.annual}</strong> — saving you over £{primaryPricing.saving}.
                     <br /><br />
-                    That works out to <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
+                    That's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
                   </>
                 )}
               </p>
@@ -927,7 +916,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             <div style={{ ...scriptBoxStyle, background: colors.accent, marginTop: '20px' }}>
               <span style={{ ...labelStyle, color: colors.dark }}>IF YES → PAYMENT OPTIONS (A/B Close)</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                "Perfect! Would you prefer to <strong>pay upfront and save an extra 5%</strong> - that's <strong>£{hasSiblings ? priceInfo.upfront : primaryPricing.upfront}</strong> - or <strong>split it into 3 monthly instalments</strong> of £{hasSiblings ? priceInfo.instalments3 : primaryPricing.instalments3}?"
+                "Perfect! Would you prefer to <strong>pay upfront and save an extra 5%</strong> - that's <strong>£{hasSiblings ? priceInfo.upfront : primaryPricing.upfront}</strong> - or <strong>split it into 2 monthly instalments</strong> of £{hasSiblings ? priceInfo.instalments3 : primaryPricing.instalments3}?"
               </p>
             </div>
             {isMultiYear(primaryChild.yearGroup) && (
@@ -954,10 +943,10 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                       return isPro ? getProOriginalPrice(primaryChild.yearGroup, subjectCount, false) : getOriginalPrice(primaryChild.yearGroup, subjectCount, false);
                     })()})</span>
                     <br />
-                    <strong>3 instalments:</strong> £{(() => {
+                    <strong>2 instalments:</strong> £{(() => {
                       const currentYearPricing = isPro ? proPricing.currentYear : standardPricing.currentYear;
                       const subjectKey = primaryPricing.subjectCount === 1 ? 1 : primaryPricing.subjectCount === 2 ? 2 : 'ultimate';
-                      return (currentYearPricing[subjectKey]?.annual / 3).toFixed(2);
+                      return (currentYearPricing[subjectKey]?.annual / 2).toFixed(2);
                     })()} each
                     <br />
                     <strong style={{ color: colors.success }}>Upfront (5% off):</strong> £{(() => {
@@ -1037,10 +1026,10 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                       return (multiYearPricing[subjectKey]?.annual / 3).toFixed(2);
                     })()} each
                     <br />
-                    <strong>6 instalments:</strong> £{(() => {
+                    <strong>5 instalments:</strong> £{(() => {
                       const multiYearPricing = isPro ? proPricing.multiYear : standardPricing.multiYear;
                       const subjectKey = primaryPricing.subjectCount === 1 ? 1 : primaryPricing.subjectCount === 2 ? 2 : 'ultimate';
-                      return (multiYearPricing[subjectKey]?.annual / 6).toFixed(2);
+                      return (multiYearPricing[subjectKey]?.annual / 5).toFixed(2);
                     })()} each
                     <br />
                     <strong style={{ color: colors.success }}>Upfront (5% off):</strong> £{(() => {
