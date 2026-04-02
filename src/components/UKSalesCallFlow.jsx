@@ -269,8 +269,9 @@ export default function UKSalesCallFlow() {
     const total = fullPrice + discountedPrices.reduce((a, b) => a + b, 0);
     const monthlyPrices = children.map(c => ({ ...getPricing(c), childName: c.name })).sort((a, b) => b.monthly - a.monthly);
     const totalMonthly = monthlyPrices[0].monthly + monthlyPrices.slice(1).reduce((acc, p) => acc + p.monthly * 0.8, 0);
+    const totalOriginal = prices.reduce((acc, p) => acc + p.original, 0);
     return {
-      total, phoneTotal: (total * 0.95).toFixed(2),
+      total, totalOriginal, phoneTotal: (total * 0.95).toFixed(2),
       totalMonthly,
       monthlyBreakdown: monthlyPrices.map((p, i) => ({ ...p, discounted: i > 0, finalMonthly: i === 0 ? p.monthly : p.monthly * 0.8 })),
       breakdown: prices.map((p, i) => ({ ...p, discounted: i > 0, finalPrice: i === 0 ? p.annual : p.annual * 0.8 })),
@@ -872,7 +873,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                       <span key={i}><strong>{children[i].name || `Child ${i + 1}`}:</strong> £{p.finalPrice.toFixed(2)} {p.discounted && <span style={{ color: colors.success }}>(20% off)</span>}<br /></span>
                     ))}
                     <br />
-                    The full year's programme is valued at <strong>£{(priceInfo.total / 0.665).toFixed(0)}</strong> — and even though you're joining partway through, your children still get access to every recorded lesson from the start of the year. So they can catch up on anything they've missed from day one.
+                    The full year's programme is valued at <strong>£{priceInfo.totalOriginal}</strong> — and even though you're joining partway through, your children still get access to every recorded lesson from the start of the year. So they can catch up on anything they've missed from day one.
                     <br /><br />
                     Because you're coming in partway through, it's just <strong>£{priceInfo.total.toFixed(2)}</strong> — that's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
                   </>
