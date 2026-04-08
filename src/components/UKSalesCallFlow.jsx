@@ -244,16 +244,17 @@ export default function UKSalesCallFlow() {
     const yg = child.yearGroup;
     // English Literature is free for Year 12/13 — don't count it toward pricing
     const paidSubjects = (yg === 'Year 12' || yg === 'Year 13') ? child.subjects.filter(s => s !== 'English Literature') : child.subjects;
-    const subjectCount = paidSubjects.length || 1;
+    const paidCount = paidSubjects.length || 1;
+    const displayCount = child.subjects.length || 1;
     const multi = isMultiYear(yg);
 
     const priceTable = multi ? pricing.multiYear : pricing.currentYear;
-    const tier = subjectCount >= 3 ? 'ultimate' : subjectCount;
+    const tier = paidCount >= 3 ? 'ultimate' : paidCount;
     const tierData = priceTable[tier] || priceTable[1];
-    const monthlyTier = tier === 'ultimate' || subjectCount >= 3 ? 'ultimate' : tier;
+    const monthlyTier = tier === 'ultimate' || paidCount >= 3 ? 'ultimate' : tier;
     const monthlyPrice = pricing.monthly[monthlyTier] || pricing.monthly[1];
-    const lessons = getLessonsForYearGroup(yg, subjectCount, multi);
-    const original = isPro ? getProOriginalPrice(yg, subjectCount, multi) : getOriginalPrice(yg, subjectCount, multi);
+    const lessons = getLessonsForYearGroup(yg, paidCount, multi);
+    const original = isPro ? getProOriginalPrice(yg, paidCount, multi) : getOriginalPrice(yg, paidCount, multi);
     const annual = tierData.annual;
     const phoneDiscount = annual * 0.95;
 
@@ -262,7 +263,7 @@ export default function UKSalesCallFlow() {
       instalments3: (annual / 2).toFixed(2), upfront: (annual * 0.95).toFixed(2),
       phonePrice: phoneDiscount.toFixed(2), saving: (original - annual).toFixed(0),
       phoneSaving: (original - phoneDiscount).toFixed(0), pricePerHour: (annual / lessons).toFixed(2),
-      subjectCount, lessonsPerMonth: subjectCount * 8, tutorCost: subjectCount * 8 * 50, isMultiYear: multi,
+      subjectCount: displayCount, lessonsPerMonth: displayCount * 8, tutorCost: displayCount * 8 * 50, isMultiYear: multi,
     };
   };
   const getTotalPricing = () => {
