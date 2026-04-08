@@ -116,18 +116,20 @@ const getLessonsForYearGroup = (yg, subjectCount, isMultiYear) => {
 const getOriginalPrice = (yg, subjectCount, isMultiYear) => {
   // Standard monthly prices: 1 sub = £80, 2 sub = £144, 3+ = £180
   const monthly = subjectCount >= 3 ? 180 : subjectCount === 2 ? 144 : 80;
-  // Full academic year value (10 months Sept-June)
+  // Full academic year value: current year 10 months (Sept-June)
+  // Multi-year: 10 months this year + 9 months next year (Sept-May) = 19
   if (isMultiYear) {
-    return monthly * 10 * 2;
+    return monthly * 19;
   }
   return monthly * 10;
 };
 const getProOriginalPrice = (yg, subjectCount, isMultiYear) => {
   // Pro monthly prices: 1 sub = £110, 2 sub = £198, 3+ = £240
   const monthly = subjectCount >= 3 ? 240 : subjectCount === 2 ? 198 : 110;
-  // Full academic year value (10 months Sept-June)
+  // Full academic year value: current year 10 months (Sept-June)
+  // Multi-year: 10 months this year + 9 months next year (Sept-May) = 19
   if (isMultiYear) {
-    return monthly * 10 * 2;
+    return monthly * 19;
   }
   return monthly * 10;
 };
@@ -240,16 +242,19 @@ export default function UKSalesCallFlow() {
   };
   const getPricing = (child) => {
     const yg = child.yearGroup;
-    const subjectCount = child.subjects.length || 1;
+    // English Literature is free for Year 12/13 — don't count it toward pricing
+    const paidSubjects = (yg === 'Year 12' || yg === 'Year 13') ? child.subjects.filter(s => s !== 'English Literature') : child.subjects;
+    const paidCount = paidSubjects.length || 1;
+    const displayCount = child.subjects.length || 1;
     const multi = isMultiYear(yg);
 
     const priceTable = multi ? pricing.multiYear : pricing.currentYear;
-    const tier = subjectCount >= 3 ? 'ultimate' : subjectCount;
+    const tier = paidCount >= 3 ? 'ultimate' : paidCount;
     const tierData = priceTable[tier] || priceTable[1];
-    const monthlyTier = tier === 'ultimate' || subjectCount >= 3 ? 'ultimate' : tier;
+    const monthlyTier = tier === 'ultimate' || paidCount >= 3 ? 'ultimate' : tier;
     const monthlyPrice = pricing.monthly[monthlyTier] || pricing.monthly[1];
-    const lessons = getLessonsForYearGroup(yg, subjectCount, multi);
-    const original = isPro ? getProOriginalPrice(yg, subjectCount, multi) : getOriginalPrice(yg, subjectCount, multi);
+    const lessons = getLessonsForYearGroup(yg, paidCount, multi);
+    const original = isPro ? getProOriginalPrice(yg, paidCount, multi) : getOriginalPrice(yg, paidCount, multi);
     const annual = tierData.annual;
     const phoneDiscount = annual * 0.95;
 
@@ -258,7 +263,7 @@ export default function UKSalesCallFlow() {
       instalments3: (annual / 2).toFixed(2), upfront: (annual * 0.95).toFixed(2),
       phonePrice: phoneDiscount.toFixed(2), saving: (original - annual).toFixed(0),
       phoneSaving: (original - phoneDiscount).toFixed(0), pricePerHour: (annual / lessons).toFixed(2),
-      subjectCount, lessonsPerMonth: subjectCount * 8, tutorCost: subjectCount * 8 * 50, isMultiYear: multi,
+      subjectCount: displayCount, lessonsPerMonth: displayCount * 8, tutorCost: displayCount * 8 * 50, isMultiYear: multi,
     };
   };
   const getTotalPricing = () => {
@@ -873,7 +878,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                       <span key={i}><strong>{children[i].name || `Child ${i + 1}`}:</strong> £{p.finalPrice.toFixed(2)} {p.discounted && <span style={{ color: colors.success }}>(20% off)</span>}<br /></span>
                     ))}
                     <br />
-                    The full year's programme is valued at <strong>£{priceInfo.totalOriginal}</strong> — and even though you're joining partway through, your children still get access to every recorded lesson from the start of the year. So they can catch up on anything they've missed from day one.
+                    {primaryPricing.isMultiYear ? 'The full two-year programme is valued at' : 'The full year\'s programme is valued at'} <strong>£{priceInfo.totalOriginal}</strong> — and even though you're joining partway through, your children still get access to every recorded lesson from the start of the year. So they can catch up on anything they've missed from day one.
                     <br /><br />
                     Because you're coming in partway through, it's just <strong>£{priceInfo.total.toFixed(2)}</strong> — saving you over £{(priceInfo.totalOriginal - priceInfo.total).toFixed(0)}.
                     <br /><br />
@@ -881,7 +886,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                   </>
                 ) : (
                   <>
-                    The full year's programme is valued at <strong>£{primaryPricing.original}</strong> — and even though you're joining partway through, {displayName(primaryChild)} still gets access to every recorded lesson from the start of the year. So they can catch up on anything they've missed from day one.
+                    {primaryPricing.isMultiYear ? 'The full two-year programme is valued at' : 'The full year\'s programme is valued at'} <strong>£{primaryPricing.original}</strong> — and even though you're joining partway through, {displayName(primaryChild)} still gets access to every recorded lesson from the start of the year. So they can catch up on anything they've missed from day one.
                     <br /><br />
                     Because you're coming in partway through, it's just <strong>£{primaryPricing.annual}</strong> — saving you over £{primaryPricing.saving}.
                     <br /><br />
