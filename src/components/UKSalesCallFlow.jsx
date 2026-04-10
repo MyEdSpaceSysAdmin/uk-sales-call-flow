@@ -139,7 +139,7 @@ const standardPricing = {
   monthly: { 1: 80, 2: 144, ultimate: 180 },
 };
 const proPricing = {
-  currentYear: { 1: { annual: 369 }, 2: { annual: 664.20 }, ultimate: { annual: 669 } },
+  currentYear: { 1: { annual: 289 }, 2: { annual: 520.20 }, ultimate: { annual: 669 } },
   multiYear: { 1: { annual: 889 }, 2: { annual: 1600.20 }, ultimate: { annual: 1869 } },
   monthly: { 1: 110, 2: 198, ultimate: 240 },
 };
