@@ -134,13 +134,13 @@ const getProOriginalPrice = (yg, subjectCount, isMultiYear) => {
   return monthly * 10;
 };
 const standardPricing = {
-  currentYear: { 1: { annual: 219 }, 2: { annual: 394.20 }, ultimate: { annual: 539 } },
-  multiYear: { 1: { annual: 619 }, 2: { annual: 1114.20 }, ultimate: { annual: 1469 } },
+  currentYear: { 1: { annual: 169 }, 2: { annual: 304.20 }, ultimate: { annual: 429 } },
+  multiYear: { 1: { annual: 589 }, 2: { annual: 1060.20 }, ultimate: { annual: 1419 } },
   monthly: { 1: 80, 2: 144, ultimate: 180 },
 };
 const proPricing = {
-  currentYear: { 1: { annual: 289 }, 2: { annual: 520.20 }, ultimate: { annual: 669 } },
-  multiYear: { 1: { annual: 889 }, 2: { annual: 1600.20 }, ultimate: { annual: 1869 } },
+  currentYear: { 1: { annual: 219 }, 2: { annual: 394.20 }, ultimate: { annual: 499 } },
+  multiYear: { 1: { annual: 829 }, 2: { annual: 1492.20 }, ultimate: { annual: 1809 } },
   monthly: { 1: 110, 2: 198, ultimate: 240 },
 };
 const subjectsByYear = {
