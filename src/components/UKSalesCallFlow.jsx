@@ -495,8 +495,8 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                     {tiers.map(t => <td key={t.tier} style={tdVal}>£{(pricing.multiYear[t.tier].annual / 3).toFixed(2)}</td>)}
                   </tr>
                   <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
-                    <td style={tdLabel}>6x (Multi-Year)</td>
-                    {tiers.map(t => <td key={t.tier} style={tdVal}>£{(pricing.multiYear[t.tier].annual / 6).toFixed(2)}</td>)}
+                    <td style={tdLabel}>5x (Multi-Year)</td>
+                    {tiers.map(t => <td key={t.tier} style={tdVal}>£{(pricing.multiYear[t.tier].annual / 5).toFixed(2)}</td>)}
                   </tr>
                   <tr style={{ borderBottom: '1px solid #f0f0f0', background: '#e8f5e9' }}>
                     <td style={{ ...tdLabel, color: colors.success }}>Upfront (5% off)</td>
@@ -521,7 +521,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             </div>
             <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
               <div style={{ flex: 1, padding: '6px 10px', background: '#e8f5e9', fontSize: '10px', color: colors.success, fontWeight: '600', textAlign: 'center' }}>14-day money-back guarantee on all plans</div>
-              <div style={{ flex: 1, padding: '6px 10px', background: '#fff3e0', fontSize: '10px', color: colors.warning, fontWeight: '600', textAlign: 'center' }}>Monthly does NOT include Easter Revision or Cram Course</div>
+              <div style={{ flex: 1, padding: '6px 10px', background: '#e8f5e9', fontSize: '10px', color: colors.success, fontWeight: '600', textAlign: 'center' }}>Easter Revision &amp; Exam Masterclass included on all plans</div>
               <div style={{ flex: 1, padding: '6px 10px', background: '#f0f4ff', fontSize: '10px', color: colors.primary, fontWeight: '600', textAlign: 'center' }}>20% sibling discount on additional children</div>
             </div>
           </div>
@@ -896,8 +896,8 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
               </p>
             </div>
             {isExamYear(primaryChild.yearGroup) && (
-              <div style={{ ...tipBoxStyle, background: '#fff3e0' }}>
-                <strong>📝 Note:</strong> Easter Revision + Cram Course are included with the full course, but NOT with monthly. Worth mentioning if they go monthly.
+              <div style={{ ...tipBoxStyle, background: '#e8f5e9' }}>
+                <strong>📝 Note:</strong> Easter Revision + Exam Masterclass are included on all plans, including monthly.
               </div>
             )}
             <div style={scriptBoxStyle}>
@@ -978,11 +978,11 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                         <br />
                       </span>
                     ))}
-                    {children.some(c => isExamYear(c.yearGroup)) && <><br /><em style={{ color: colors.warning }}>Note: Monthly doesn't include Easter Revision or Cram Course.</em></>}"
+                    "
                   </>
                 ) : (
                   <>
-                    "Or if you'd prefer flexibility, we have monthly at <strong>£{primaryPricing.monthly}/month</strong> - no lock-in, cancel anytime.{isExamYear(primaryChild.yearGroup) && <><br /><br /><em style={{ color: colors.warning }}>Note: Monthly doesn't include Easter Revision or Cram Course.</em></>}"
+                    "Or if you'd prefer flexibility, we have monthly at <strong>£{primaryPricing.monthly}/month</strong> - no lock-in, cancel anytime."
                   </>
                 )}
               </p>
