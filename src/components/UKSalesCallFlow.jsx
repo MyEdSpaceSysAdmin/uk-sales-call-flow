@@ -92,13 +92,13 @@ const curriculumLinks = {
   'Year 13': { Maths: 'https://myedspace.co.uk/Year13-Maths-Curriculum', Biology: 'https://myedspace.co.uk/Year13-Biology-AQA-Curriculum', Chemistry: 'https://myedspace.co.uk/Year13-Chemistry-AQA-Curriculum', Physics: 'https://myedspace.co.uk/Year13-Physics-Curriculum', 'Further Maths': 'https://myedspace.co.uk/Year13-Further-Maths-Curriculum' },
 };
 // Pricing per year group — annual prices are uniform, but original prices and lesson counts vary by year group
-const getLessonsForYearGroup = (yg, subjectCount, isMultiYear) => {
-  const perSubject = isMultiYear
+const getLessonsForYearGroup = (yg, subjectCount, isNextYear) => {
+  const perSubject = isNextYear
     ? (['Year 11'].includes(yg) ? 132 : ['Year 10', 'Year 12'].includes(yg) ? 140 : 148)
     : (['Year 11', 'Year 13'].includes(yg) ? 66 : 74);
   if (subjectCount >= 3) {
     // Ultimate Pass lesson counts from tables
-    if (isMultiYear) {
+    if (isNextYear) {
       if (yg === 'Year 9') return 592;
       if (yg === 'Year 10') return 700;
       if (yg === 'Year 11') return 660;
@@ -113,36 +113,35 @@ const getLessonsForYearGroup = (yg, subjectCount, isMultiYear) => {
   }
   return perSubject * subjectCount;
 };
-const getOriginalPrice = (yg, subjectCount, isMultiYear) => {
-  // Standard monthly prices: 1 sub = £80, 2 sub = £144, 3+ = £180
+const getOriginalPrice = (yg, subjectCount, isNextYear) => {
   const monthly = subjectCount >= 3 ? 180 : subjectCount === 2 ? 144 : 80;
-  // Full academic year value: current year 10 months (Sept-June)
-  // Multi-year: 10 months this year + 9 months next year (Sept-May) = 19
-  if (isMultiYear) {
-    return monthly * 19;
+  if (isNextYear) {
+    // Next year months + 2 months remaining this year
+    const nextYearMonths = (yg === 'Year 10' || yg === 'Year 12') ? 9 : 10;
+    return monthly * (nextYearMonths + 2);
   }
   return monthly * 10;
 };
-const getProOriginalPrice = (yg, subjectCount, isMultiYear) => {
-  // Pro monthly prices: 1 sub = £110, 2 sub = £198, 3+ = £240
+const getProOriginalPrice = (yg, subjectCount, isNextYear) => {
   const monthly = subjectCount >= 3 ? 240 : subjectCount === 2 ? 198 : 110;
-  // Full academic year value: current year 10 months (Sept-June)
-  // Multi-year: 10 months this year + 9 months next year (Sept-May) = 19
-  if (isMultiYear) {
-    return monthly * 19;
+  if (isNextYear) {
+    // Next year months + 2 months remaining this year
+    const nextYearMonths = (yg === 'Year 10' || yg === 'Year 12') ? 9 : 10;
+    return monthly * (nextYearMonths + 2);
   }
   return monthly * 10;
 };
 const standardPricing = {
   currentYear: { 1: { annual: 169 }, 2: { annual: 304.20 }, ultimate: { annual: 429 } },
-  multiYear: { 1: { annual: 589 }, 2: { annual: 1060.20 }, ultimate: { annual: 1419 } },
+  nextYear: { 1: { annual: 419 }, 2: { annual: 754.20 }, ultimate: { annual: 989 } },
   monthly: { 1: 80, 2: 144, ultimate: 180 },
 };
 const proPricing = {
   currentYear: { 1: { annual: 219 }, 2: { annual: 394.20 }, ultimate: { annual: 499 } },
-  multiYear: { 1: { annual: 829 }, 2: { annual: 1492.20 }, ultimate: { annual: 1809 } },
+  nextYear: { 1: { annual: 609 }, 2: { annual: 974.40 }, ultimate: { annual: 1309 } },
   monthly: { 1: 110, 2: 198, ultimate: 240 },
 };
+const emcPricing = { 1: 59, 2: 109, ultimate: 149 };
 const subjectsByYear = {
   'Year 5': ['Maths', 'English', 'Science', '11+'],
   'Year 6': ['Maths', 'English', 'Science'],
@@ -199,7 +198,7 @@ export default function UKSalesCallFlow() {
   const pricing = isPro ? proPricing : standardPricing;
 
   const effectiveYearGroup = (child) => child.yearGroup;
-  const isMultiYear = (yg) => yg === 'Year 10' || yg === 'Year 12';
+  const isNextYearOffer = (yg) => yg && yg !== 'Other' && !isExamYear(yg);
   const isExamYear = (yg) => yg === 'Year 11' || yg === 'Year 13';
   const isGCSERange = (yg) => ['Year 9', 'Year 10', 'Year 11'].includes(yg);
   const allChildNames = () => {
@@ -246,24 +245,24 @@ export default function UKSalesCallFlow() {
     const paidSubjects = (yg === 'Year 12' || yg === 'Year 13') ? child.subjects.filter(s => s !== 'English Literature') : child.subjects;
     const paidCount = paidSubjects.length || 1;
     const displayCount = child.subjects.length || 1;
-    const multi = isMultiYear(yg);
+    const nextYear = isNextYearOffer(yg);
 
-    const priceTable = multi ? pricing.multiYear : pricing.currentYear;
+    const priceTable = nextYear ? pricing.nextYear : pricing.currentYear;
     const tier = paidCount >= 3 ? 'ultimate' : paidCount;
     const tierData = priceTable[tier] || priceTable[1];
     const monthlyTier = tier === 'ultimate' || paidCount >= 3 ? 'ultimate' : tier;
     const monthlyPrice = pricing.monthly[monthlyTier] || pricing.monthly[1];
-    const lessons = getLessonsForYearGroup(yg, paidCount, multi);
-    const original = isPro ? getProOriginalPrice(yg, paidCount, multi) : getOriginalPrice(yg, paidCount, multi);
+    const lessons = getLessonsForYearGroup(yg, paidCount, nextYear);
+    const original = isPro ? getProOriginalPrice(yg, paidCount, nextYear) : getOriginalPrice(yg, paidCount, nextYear);
     const annual = tierData.annual;
     const phoneDiscount = annual * 0.95;
 
     return {
       annual, original, lessons, monthly: monthlyPrice,
-      instalments3: (annual / 2).toFixed(2), upfront: (annual * 0.95).toFixed(2),
+      instalments3: (annual / (nextYear ? 4 : 2)).toFixed(2), upfront: (annual * 0.95).toFixed(2),
       phonePrice: phoneDiscount.toFixed(2), saving: (original - annual).toFixed(0),
       phoneSaving: (original - phoneDiscount).toFixed(0), pricePerHour: (annual / lessons).toFixed(2),
-      subjectCount: displayCount, lessonsPerMonth: displayCount * 8, tutorCost: displayCount * 8 * 50, isMultiYear: multi,
+      subjectCount: displayCount, lessonsPerMonth: displayCount * 8, tutorCost: displayCount * 8 * 50, isNextYear: nextYear,
     };
   };
   const getTotalPricing = () => {
@@ -280,7 +279,7 @@ export default function UKSalesCallFlow() {
       totalMonthly,
       monthlyBreakdown: monthlyPrices.map((p, i) => ({ ...p, discounted: i > 0, finalMonthly: i === 0 ? p.monthly : p.monthly * 0.8 })),
       breakdown: prices.map((p, i) => ({ ...p, discounted: i > 0, finalPrice: i === 0 ? p.annual : p.annual * 0.8 })),
-      instalments3: (total / 2).toFixed(2), upfront: (total * 0.95).toFixed(2),
+      instalments3: (total / (isNextYearOffer(primaryChild.yearGroup) ? 4 : 2)).toFixed(2), upfront: (total * 0.95).toFixed(2),
     };
   };
   const getTeacherInfo = (child) => {
@@ -458,10 +457,10 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                     })}
                   </tr>
 
-                  {sectionRow('Multi-Year — Annual')}
+                  {sectionRow('Next Year — Annual')}
                   <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
                     <td style={tdLabel}>Annual Price</td>
-                    {tiers.map(t => <td key={t.tier} style={{ ...tdVal, fontWeight: '800', fontSize: '13px' }}>£{pricing.multiYear[t.tier].annual}</td>)}
+                    {tiers.map(t => <td key={t.tier} style={{ ...tdVal, fontWeight: '800', fontSize: '13px' }}>£{pricing.nextYear[t.tier].annual}</td>)}
                   </tr>
                   <tr style={{ borderBottom: '1px solid #f0f0f0', background: '#fafafa' }}>
                     <td style={tdLabel}><span style={{ color: colors.darkGray }}>Was</span></td>
@@ -474,37 +473,41 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                     <td style={tdLabel}><span style={{ color: colors.success }}>Saving</span></td>
                     {tiers.map(t => {
                       const orig = isPro ? getProOriginalPrice(ygMulti, t.count, true) : getOriginalPrice(ygMulti, t.count, true);
-                      return <td key={t.tier} style={{ ...tdVal, color: colors.success }}>£{(orig - pricing.multiYear[t.tier].annual).toFixed(0)}</td>;
+                      return <td key={t.tier} style={{ ...tdVal, color: colors.success }}>£{(orig - pricing.nextYear[t.tier].annual).toFixed(0)}</td>;
                     })}
                   </tr>
                   <tr style={{ borderBottom: '1px solid #f0f0f0', background: '#fafafa' }}>
                     <td style={tdLabel}><span style={{ color: colors.primary }}>Per Lesson</span></td>
                     {tiers.map(t => {
                       const lessons = getLessonsForYearGroup(ygMulti, t.count, true);
-                      return <td key={t.tier} style={{ ...tdVal, color: colors.primary }}>£{(pricing.multiYear[t.tier].annual / lessons).toFixed(2)}</td>;
+                      return <td key={t.tier} style={{ ...tdVal, color: colors.primary }}>£{(pricing.nextYear[t.tier].annual / lessons).toFixed(2)}</td>;
                     })}
                   </tr>
 
                   {sectionRow('Payment Options')}
                   <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
-                    <td style={tdLabel}>2x Instalments</td>
-                    {tiers.map(t => <td key={t.tier} style={tdVal}>£{(pricing.currentYear[t.tier].annual / 2).toFixed(2)}</td>)}
+                    <td style={tdLabel}>4x Instalments (Next Year)</td>
+                    {tiers.map(t => <td key={t.tier} style={tdVal}>£{(pricing.nextYear[t.tier].annual / 4).toFixed(2)}</td>)}
                   </tr>
                   <tr style={{ borderBottom: '1px solid #f0f0f0', background: '#fafafa' }}>
-                    <td style={tdLabel}>3x (Multi-Year)</td>
-                    {tiers.map(t => <td key={t.tier} style={tdVal}>£{(pricing.multiYear[t.tier].annual / 3).toFixed(2)}</td>)}
+                    <td style={tdLabel}>2x Instalments (This Year)</td>
+                    {tiers.map(t => <td key={t.tier} style={tdVal}>£{(pricing.currentYear[t.tier].annual / 2).toFixed(2)}</td>)}
                   </tr>
                   <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
-                    <td style={tdLabel}>5x (Multi-Year)</td>
-                    {tiers.map(t => <td key={t.tier} style={tdVal}>£{(pricing.multiYear[t.tier].annual / 5).toFixed(2)}</td>)}
+                    <td style={tdLabel}>3x (Next Year)</td>
+                    {tiers.map(t => <td key={t.tier} style={tdVal}>£{(pricing.nextYear[t.tier].annual / 3).toFixed(2)}</td>)}
+                  </tr>
+                  <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
+                    <td style={tdLabel}>5x (Next Year)</td>
+                    {tiers.map(t => <td key={t.tier} style={tdVal}>£{(pricing.nextYear[t.tier].annual / 5).toFixed(2)}</td>)}
                   </tr>
                   <tr style={{ borderBottom: '1px solid #f0f0f0', background: '#e8f5e9' }}>
                     <td style={{ ...tdLabel, color: colors.success }}>Upfront (5% off)</td>
                     {tiers.map(t => <td key={t.tier} style={{ ...tdVal, color: colors.success, fontWeight: '700' }}>£{(pricing.currentYear[t.tier].annual * 0.95).toFixed(2)}</td>)}
                   </tr>
                   <tr style={{ background: '#e8f5e9' }}>
-                    <td style={{ ...tdLabel, color: colors.success }}>Upfront Multi-Yr</td>
-                    {tiers.map(t => <td key={t.tier} style={{ ...tdVal, color: colors.success, fontWeight: '700' }}>£{(pricing.multiYear[t.tier].annual * 0.95).toFixed(2)}</td>)}
+                    <td style={{ ...tdLabel, color: colors.success }}>Upfront (Next Yr)</td>
+                    {tiers.map(t => <td key={t.tier} style={{ ...tdVal, color: colors.success, fontWeight: '700' }}>£{(pricing.nextYear[t.tier].annual * 0.95).toFixed(2)}</td>)}
                   </tr>
 
                   {sectionRow('Monthly (Cancel Anytime)')}
@@ -521,7 +524,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             </div>
             <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
               <div style={{ flex: 1, padding: '6px 10px', background: '#e8f5e9', fontSize: '10px', color: colors.success, fontWeight: '600', textAlign: 'center' }}>14-day money-back guarantee on all plans</div>
-              <div style={{ flex: 1, padding: '6px 10px', background: '#e8f5e9', fontSize: '10px', color: colors.success, fontWeight: '600', textAlign: 'center' }}>Easter Revision &amp; Exam Masterclass included on all plans</div>
+              <div style={{ flex: 1, padding: '6px 10px', background: '#e8f5e9', fontSize: '10px', color: colors.success, fontWeight: '600', textAlign: 'center' }}>Exam Masterclass available for Y11/Y13</div>
               <div style={{ flex: 1, padding: '6px 10px', background: '#f0f4ff', fontSize: '10px', color: colors.primary, fontWeight: '600', textAlign: 'center' }}>20% sibling discount on additional children</div>
             </div>
           </div>
@@ -792,14 +795,6 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 Sound good so far?"
               </p>
             </div>
-            {isExamYear(primaryChild.yearGroup) && (
-              <div style={scriptBoxStyle}>
-                <span style={labelStyle}>Exam Year Bonus</span>
-                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                  "And because {displayName(primaryChild)} is in {primaryChild.yearGroup}, the package includes our <strong>Easter Revision Course</strong> and <strong>Cram Course</strong> - led by actual examiners who know exactly what the markers are looking for."
-                </p>
-              </div>
-            )}
             <div style={scriptBoxStyle}>
               <span style={labelStyle}>Outcome</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
@@ -836,16 +831,134 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 "So let me walk you through the investment. An average private tutor charges around £50 an hour. Two lessons a week{primaryPricing.subjectCount > 1 ? ` per subject - that's ${primaryPricing.subjectCount} subjects, so ${primaryPricing.subjectCount * 8} lessons a month` : ', that\'s 8 lessons a month'} - <strong>£{primaryPricing.subjectCount * 400} a month</strong> just for their time. No workbooks, no video solutions, no recordings."
               </p>
             </div>
-            {isMultiYear(primaryChild.yearGroup) && (
+            {isNextYearOffer(primaryChild.yearGroup) && (
               <div style={{ ...scriptBoxStyle, borderLeft: `4px solid ${colors.primary}`, background: '#f0f4ff' }}>
-                <span style={{ ...labelStyle, color: colors.primary }}>MULTI-YEAR RECOMMENDATION</span>
+                <span style={{ ...labelStyle, color: colors.primary }}>NEXT YEAR OFFER — GET THE REST OF THIS YEAR FREE</span>
                 <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                  "Given {displayName(primaryChild)} is in {primaryChild.yearGroup}, I'd recommend our Multi-Year package. It's specifically designed to prepare them for {primaryChild.yearGroup === 'Year 10' ? 'GCSEs' : 'A-Levels'} next year - so they're not just learning, they're building towards the exams that actually matter.
+                  "Great news — if you sign up for next year's course today, {displayName(primaryChild)} gets access to the rest of this year completely free. That means they start lessons this week, get all the recordings from this year, and they're already locked in for September.
                   <br /><br />
                   Here's what's included..."
                 </p>
               </div>
             )}
+            {isExamYear(primaryChild.yearGroup) && (() => {
+              const examPaidSubjects = primaryChild.yearGroup === 'Year 13' ? primaryChild.subjects.filter(s => s !== 'English Literature') : primaryChild.subjects;
+              const examPaidCount = examPaidSubjects.length || 1;
+              const emcTier = examPaidCount >= 3 ? 'ultimate' : examPaidCount;
+              const emcPrice = emcPricing[emcTier];
+              const currentYearTable = isPro ? proPricing.currentYear : standardPricing.currentYear;
+              const currentTier = examPaidCount >= 3 ? 'ultimate' : examPaidCount;
+              const mainCoursePrice = currentYearTable[currentTier]?.annual;
+              const freeValue = mainCoursePrice + emcPrice;
+              return (
+                <>
+                  <div style={{ ...scriptBoxStyle, background: '#e8f5e9', border: `2px solid ${colors.success}` }}>
+                    <span style={{ ...labelStyle, color: colors.success }}>🎯 TIER 1: EXAM MASTERCLASS (SELL THIS FIRST)</span>
+                    <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                      "We're running our <strong>Exam Masterclass</strong> for {primaryChild.yearGroup === 'Year 11' ? 'GCSE' : 'A-Level'} students — this is an intensive course between now and the end of exams. Led by actual examiners who know exactly what the markers are looking for.
+                      <br /><br />
+                      This covers past papers, full curriculum review, and exam technique — everything {displayName(primaryChild)} needs to maximise their grade."
+                    </p>
+                    <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: `1px solid ${colors.success}` }}>
+                      <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: colors.success }}>EXAM MASTERCLASS PRICING ({examPaidCount} subject{examPaidCount > 1 ? 's' : ''}):</p>
+                      <p style={{ margin: '6px 0 0 0', fontSize: '13px', lineHeight: '1.8' }}>
+                        <strong>1 subject:</strong> £59<br />
+                        <strong>2 subjects:</strong> £109<br />
+                        <strong>All subjects:</strong> £149<br /><br />
+                        <strong style={{ color: colors.success }}>→ {displayName(primaryChild)}: £{emcPrice}</strong>
+                      </p>
+                    </div>
+                    <div style={{ marginTop: '12px', padding: '8px', background: '#f1f8e9', border: `1px dashed ${colors.success}` }}>
+                      <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                        <strong>"Should I get {displayName(primaryChild)} signed up for the Masterclass?"</strong>
+                      </p>
+                    </div>
+                  </div>
+                  <div style={{ ...scriptBoxStyle, background: '#e3f2fd', marginTop: '20px', border: `2px solid ${colors.primary}` }}>
+                    <span style={{ ...labelStyle, color: colors.primary }}>TIER 2: FULL COURSE OPTION</span>
+                    <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                      "And just so you know — the only difference between the Masterclass and our <strong>full course</strong> is that with the full course, {displayName(primaryChild)} also gets access to <strong>all the recorded lessons from the start of the year</strong>.
+                      <br /><br />
+                      Plus workbooks, homework after every lesson with full video solutions, and outside-of-the-lesson mentor support."
+                    </p>
+                    <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: `1px solid ${colors.primary}` }}>
+                      <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: colors.primary }}>FULL COURSE PRICING ({examPaidCount} subject{examPaidCount > 1 ? 's' : ''}) {isPro && <span style={{ color: colors.pro }}>(PRO)</span>}:</p>
+                      <p style={{ margin: '6px 0 0 0', fontSize: '13px', lineHeight: '1.8' }}>
+                        <strong>Total:</strong> £{mainCoursePrice}<br />
+                        <strong>2 instalments:</strong> £{(mainCoursePrice / 2).toFixed(2)} each<br />
+                        <strong style={{ color: colors.success }}>Upfront (5% off):</strong> £{(mainCoursePrice * 0.95).toFixed(2)}<br />
+                        <strong>Monthly:</strong> £{primaryPricing.monthly}/month — no lock-in, cancel anytime
+                      </p>
+                    </div>
+                  </div>
+                  {primaryChild.yearGroup === 'Year 11' && (
+                    <div style={{ ...scriptBoxStyle, background: '#f3e5f5', marginTop: '20px', border: `2px solid #7b1fa2` }}>
+                      <span style={{ ...labelStyle, color: '#7b1fa2' }}>🚀 TIER 3: YEAR 12 UPSELL (Year 11 Only)</span>
+                      <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                        "Now — if {displayName(primaryChild)} is going into Year 12 and taking any subjects we cover, there's a brilliant option.
+                        <br /><br />
+                        <strong>Sign up for Year 12 now, and get everything this year completely free — the full main course AND the Exam Masterclass.</strong>
+                        <br /><br />
+                        That means {displayName(primaryChild)} gets exam support right through GCSEs, and they're already locked in for September."
+                      </p>
+                      <div style={{ marginTop: '12px', padding: '10px', background: '#fce4ec', border: '1px solid #7b1fa2' }}>
+                        <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: '#7b1fa2' }}>ASK: What subjects will {displayName(primaryChild)} take in Year 12?</p>
+                        <p style={{ margin: '6px 0 0 0', fontSize: '13px', lineHeight: '1.8' }}>
+                          <strong>Eligible A-Level subjects:</strong> Maths, Biology, Chemistry, Physics, Further Maths, English Literature
+                        </p>
+                      </div>
+                      <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: '1px solid #7b1fa2' }}>
+                        <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: '#7b1fa2' }}>YEAR 12 PRICING (Next Year — This Year Free) {isPro && <span style={{ color: colors.pro }}>(PRO)</span>}:</p>
+                        <p style={{ margin: '6px 0 0 0', fontSize: '13px', lineHeight: '1.8' }}>
+                          {isPro ? (
+                            <>
+                              <strong>1 subject:</strong> £609 <span style={{ color: colors.darkGray }}>(was £{getProOriginalPrice('Year 12', 1, true)})</span><br />
+                              <strong>2 subjects:</strong> £974.40 <span style={{ color: colors.darkGray }}>(was £{getProOriginalPrice('Year 12', 2, true)})</span><br />
+                              <strong>3+ subjects:</strong> £1,309 <span style={{ color: colors.darkGray }}>(was £{getProOriginalPrice('Year 12', 3, true)})</span>
+                            </>
+                          ) : (
+                            <>
+                              <strong>1 subject:</strong> £419 <span style={{ color: colors.darkGray }}>(was £{getOriginalPrice('Year 12', 1, true)})</span><br />
+                              <strong>2 subjects:</strong> £754.20 <span style={{ color: colors.darkGray }}>(was £{getOriginalPrice('Year 12', 2, true)})</span><br />
+                              <strong>3+ subjects:</strong> £989 <span style={{ color: colors.darkGray }}>(was £{getOriginalPrice('Year 12', 3, true)})</span>
+                            </>
+                          )}
+                          <br /><br />
+                          <strong>4 instalments:</strong> {isPro ? (
+                            <>1 sub: £{(609 / 4).toFixed(2)} | 2 sub: £{(974.40 / 4).toFixed(2)} | 3+: £{(1309 / 4).toFixed(2)}</>
+                          ) : (
+                            <>1 sub: £{(419 / 4).toFixed(2)} | 2 sub: £{(754.20 / 4).toFixed(2)} | 3+: £{(989 / 4).toFixed(2)}</>
+                          )}
+                          <br />
+                          <strong style={{ color: colors.success }}>Upfront (5% off):</strong> {isPro ? (
+                            <>1 sub: £{(609 * 0.95).toFixed(2)} | 2 sub: £{(974.40 * 0.95).toFixed(2)} | 3+: £{(1309 * 0.95).toFixed(2)}</>
+                          ) : (
+                            <>1 sub: £{(419 * 0.95).toFixed(2)} | 2 sub: £{(754.20 * 0.95).toFixed(2)} | 3+: £{(989 * 0.95).toFixed(2)}</>
+                          )}
+                        </p>
+                      </div>
+                      <div style={{ marginTop: '12px', padding: '10px', background: '#e8f5e9', border: `1px solid ${colors.success}` }}>
+                        <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: colors.success }}>ANCHOR SCRIPT:</p>
+                        <p style={{ margin: '6px 0 0 0', fontSize: '14px', lineHeight: '1.8' }}>
+                          "The Year 12 programme plus everything you'd get free this year — the main course worth £{mainCoursePrice} and the Exam Masterclass worth £{emcPrice} — that's <strong>£{freeValue} of free access</strong> on top of the Year 12 course.
+                          <br /><br />
+                          But because you're signing up now, you only pay for Year 12. {displayName(primaryChild)} starts everything this week."
+                        </p>
+                        <p style={{ margin: '6px 0 0 0', fontSize: '11px', color: colors.darkGray }}>
+                          Year 12 anchor values: 1 sub = £{isPro ? getProOriginalPrice('Year 12', 1, true) : getOriginalPrice('Year 12', 1, true)} | 2 sub = £{isPro ? getProOriginalPrice('Year 12', 2, true) : getOriginalPrice('Year 12', 2, true)} | 3+ = £{isPro ? getProOriginalPrice('Year 12', 3, true) : getOriginalPrice('Year 12', 3, true)}
+                        </p>
+                      </div>
+                      <div style={{ marginTop: '12px', padding: '8px', background: '#f3e5f5', border: `1px dashed #7b1fa2` }}>
+                        <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                          <strong>"Should I get {displayName(primaryChild)} set up for Year 12 so they can start everything this week?"</strong>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+            {!isExamYear(primaryChild.yearGroup) && (
             <div style={{ ...scriptBoxStyle, borderLeft: `4px solid ${colors.accent}` }}>
               <span style={{ ...labelStyle, color: colors.dark }}>OUR PRICE {isPro && <span style={{ color: colors.pro }}>(PRO)</span>}</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
@@ -857,18 +970,6 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 <br />PLUS the workbooks so they can focus on learning...
                 <br />PLUS homework after every lesson with full video solutions...
                 <br />PLUS every lesson recorded to watch back anytime...
-                {isMultiYear(primaryChild.yearGroup) && (
-                  <>
-                    <br />PLUS Summer School between {primaryChild.yearGroup === 'Year 10' ? 'Year 10 and 11' : 'Year 12 and 13'}...
-                    <br />PLUS Easter Revision Course and Cram Course next year...
-                  </>
-                )}
-                {isExamYear(primaryChild.yearGroup) && (
-                  <>
-                    <br />PLUS Easter Revision Course for {primaryChild.yearGroup === 'Year 11' ? 'GCSEs' : 'A-Levels'}...
-                    <br />PLUS Cram Course right before the exams...
-                  </>
-                )}
                 <br /><br />
                 {hasSiblings ? (
                   <>
@@ -878,27 +979,47 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                       <span key={i}><strong>{children[i].name || `Child ${i + 1}`}:</strong> £{p.finalPrice.toFixed(2)} {p.discounted && <span style={{ color: colors.success }}>(20% off)</span>}<br /></span>
                     ))}
                     <br />
-                    {primaryPricing.isMultiYear ? 'The full two-year programme is valued at' : 'The full year\'s programme is valued at'} <strong>£{priceInfo.totalOriginal}</strong> — and even though you're joining partway through, your children still get access to every recorded lesson from the start of the year. So they can catch up on anything they've missed from day one.
-                    <br /><br />
-                    Because you're coming in partway through, it's just <strong>£{priceInfo.total.toFixed(2)}</strong> — saving you over £{(priceInfo.totalOriginal - priceInfo.total).toFixed(0)}.
-                    <br /><br />
-                    That's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
+                    {primaryPricing.isNextYear ? (
+                      <>
+                        The next year's course plus the rest of this year would normally cost <strong>£{priceInfo.totalOriginal}</strong>. But if you sign up today, everything between now and September is completely free — you only pay <strong>£{priceInfo.total.toFixed(2)}</strong> for next year.
+                        <br /><br />
+                        That's a saving of over £{(priceInfo.totalOriginal - priceInfo.total).toFixed(0)}, and your children start this week.
+                        <br /><br />
+                        That's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
+                      </>
+                    ) : (
+                      <>
+                        The full year's programme is valued at <strong>£{priceInfo.totalOriginal}</strong> — and even though you're joining partway through, your children still get access to every recorded lesson from the start of the year.
+                        <br /><br />
+                        Because you're coming in partway through, it's just <strong>£{priceInfo.total.toFixed(2)}</strong> — saving you over £{(priceInfo.totalOriginal - priceInfo.total).toFixed(0)}.
+                        <br /><br />
+                        That's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
+                      </>
+                    )}
                   </>
                 ) : (
                   <>
-                    {primaryPricing.isMultiYear ? 'The full two-year programme is valued at' : 'The full year\'s programme is valued at'} <strong>£{primaryPricing.original}</strong> — and even though you're joining partway through, {displayName(primaryChild)} still gets access to every recorded lesson from the start of the year. So they can catch up on anything they've missed from day one.
-                    <br /><br />
-                    Because you're coming in partway through, it's just <strong>£{primaryPricing.annual}</strong> — saving you over £{primaryPricing.saving}.
-                    <br /><br />
-                    That's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
+                    {primaryPricing.isNextYear ? (
+                      <>
+                        The next year's course plus the rest of this year would normally cost <strong>£{primaryPricing.original}</strong>. But if you sign up today, everything between now and September is completely free — you only pay <strong>£{primaryPricing.annual}</strong> for next year.
+                        <br /><br />
+                        That's a saving of over £{primaryPricing.saving}, and {displayName(primaryChild)} starts this week.
+                        <br /><br />
+                        That's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
+                      </>
+                    ) : (
+                      <>
+                        The full year's programme is valued at <strong>£{primaryPricing.original}</strong> — and even though you're joining partway through, {displayName(primaryChild)} still gets access to every recorded lesson from the start of the year.
+                        <br /><br />
+                        Because you're coming in partway through, it's just <strong>£{primaryPricing.annual}</strong> — saving you over £{primaryPricing.saving}.
+                        <br /><br />
+                        That's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
+                      </>
+                    )}
                   </>
                 )}
               </p>
             </div>
-            {isExamYear(primaryChild.yearGroup) && (
-              <div style={{ ...tipBoxStyle, background: '#e8f5e9' }}>
-                <strong>📝 Note:</strong> Easter Revision + Exam Masterclass are included on all plans, including monthly.
-              </div>
             )}
             <div style={scriptBoxStyle}>
               <span style={labelStyle}>Guarantee</span>
@@ -918,23 +1039,23 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
               <br /><br />
               "Great, let me send you the link to get {displayName(primaryChild)} enrolled."
             </div>
+            {!isExamYear(primaryChild.yearGroup) && (
             <div style={{ ...scriptBoxStyle, background: colors.accent, marginTop: '20px' }}>
               <span style={{ ...labelStyle, color: colors.dark }}>IF YES → PAYMENT OPTIONS (A/B Close)</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                "Perfect! Would you prefer to <strong>pay upfront and save an extra 5%</strong> - that's <strong>£{hasSiblings ? priceInfo.upfront : primaryPricing.upfront}</strong> - or <strong>split it into 2 monthly instalments</strong> of £{hasSiblings ? priceInfo.instalments3 : primaryPricing.instalments3}?"
+                "Perfect! Would you prefer to <strong>pay upfront and save an extra 5%</strong> - that's <strong>£{hasSiblings ? priceInfo.upfront : primaryPricing.upfront}</strong> - or <strong>split it into {primaryPricing.isNextYear ? '4' : '2'} monthly instalments</strong> of £{hasSiblings ? priceInfo.instalments3 : primaryPricing.instalments3}?"
               </p>
             </div>
-            {isMultiYear(primaryChild.yearGroup) && (
+            )}
+            {isNextYearOffer(primaryChild.yearGroup) && (
               <div style={{ ...scriptBoxStyle, background: '#e3f2fd', marginTop: '20px', border: `2px solid ${colors.primary}` }}>
-                <span style={{ ...labelStyle, color: colors.primary }}>IF HESITANT ABOUT MULTI-YEAR → CURRENT YEAR ONLY (Y10/Y12)</span>
+                <span style={{ ...labelStyle, color: colors.primary }}>IF HESITANT ABOUT NEXT YEAR → THIS YEAR ONLY</span>
                 <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                  "I understand - two years is a big commitment. We can also do <strong>just this year</strong> for <strong>£{(() => {
+                  "I understand — committing to next year right now is a big step. We can also do just the rest of this year for <strong>£{(() => {
                     const currentYearPricing = isPro ? proPricing.currentYear : standardPricing.currentYear;
                     const subjectKey = primaryPricing.subjectCount === 1 ? 1 : primaryPricing.subjectCount === 2 ? 2 : 'ultimate';
                     return currentYearPricing[subjectKey]?.annual;
-                  })()}</strong>. That way {displayName(primaryChild)} gets the support they need right now, and you can always extend to the multi-year later if you want to lock in the exam prep.
-                  <br /><br />
-                  Would that work better for you?"
+                  })()}</strong>. That way {displayName(primaryChild)} gets the support they need right now, and you can always sign up for next year later."
                 </p>
                 <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: `1px solid ${colors.primary}` }}>
                   <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: colors.primary }}>CURRENT YEAR PRICING ({primaryPricing.subjectCount} subject{primaryPricing.subjectCount > 1 ? 's' : ''}):</p>
@@ -993,59 +1114,6 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 "Tell you what - try it for 10 days, just £10. Full access. No auto-renewal. Fair?"
               </p>
             </div>
-            {isExamYear(primaryChild.yearGroup) && (
-              <div style={{ ...scriptBoxStyle, background: '#e8f5e9', border: `2px solid ${colors.success}` }}>
-                <span style={{ ...labelStyle, color: colors.success }}>IF STILL NO → EASTER REVISION COURSE (Y11/Y13 ONLY)</span>
-                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                  "Okay, I hear you. One last thing - if the full course isn't right for now, we do have a standalone <strong>Easter Revision Course</strong> specifically for {primaryChild.yearGroup === 'Year 11' ? 'GCSE' : 'A-Level'} students.
-                  <br /><br />
-                  It's an intensive programme over the Easter holidays - focused entirely on exam prep with teachers who are actual examiners. A lot of families use it as a final push before the exams.
-                  <br /><br />
-                  Would that be something worth looking at instead?"
-                </p>
-              </div>
-            )}
-            {!isMultiYear(primaryChild.yearGroup) && !isExamYear(primaryChild.yearGroup) && primaryChild.yearGroup && primaryChild.yearGroup !== 'Other' && (
-              <div style={{ ...scriptBoxStyle, background: '#f3e8ff', marginTop: '20px', border: `2px dashed ${colors.pro}` }}>
-                <span style={{ ...labelStyle, color: colors.pro }}>📌 UPSELL OPTION: MULTI-YEAR PACKAGE</span>
-                <p style={{ margin: 0, fontSize: '13px', lineHeight: '1.8', color: colors.darkGray }}>
-                  <em>If the lead wants to secure long-term support or asks about continuing next year:</em>
-                  <br /><br />
-                  "We also have a Multi-Year package if you want to lock in support through to {['Year 5', 'Year 6', 'Year 7', 'Year 8', 'Year 9'].includes(primaryChild.yearGroup) ? 'GCSEs' : 'A-Levels'}. It includes Summer School between years, plus Easter Revision and Cram Courses when they reach exam year. Happy to share the pricing if you're interested."
-                </p>
-                <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: `1px solid ${colors.pro}` }}>
-                  <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: colors.pro }}>MULTI-YEAR PRICING ({primaryPricing.subjectCount} subject{primaryPricing.subjectCount > 1 ? 's' : ''}):</p>
-                  <p style={{ margin: '6px 0 0 0', fontSize: '13px', lineHeight: '1.8' }}>
-                    <strong>Total:</strong> £{(() => {
-                      const multiYearPricing = isPro ? proPricing.multiYear : standardPricing.multiYear;
-                      const subjectKey = primaryPricing.subjectCount === 1 ? 1 : primaryPricing.subjectCount === 2 ? 2 : 'ultimate';
-                      return multiYearPricing[subjectKey]?.annual;
-                    })()} <span style={{ color: colors.darkGray }}>(was £{(() => {
-                      const subjectCount = primaryPricing.subjectCount;
-                      return isPro ? getProOriginalPrice(primaryChild.yearGroup, subjectCount, true) : getOriginalPrice(primaryChild.yearGroup, subjectCount, true);
-                    })()})</span>
-                    <br />
-                    <strong>3 instalments:</strong> £{(() => {
-                      const multiYearPricing = isPro ? proPricing.multiYear : standardPricing.multiYear;
-                      const subjectKey = primaryPricing.subjectCount === 1 ? 1 : primaryPricing.subjectCount === 2 ? 2 : 'ultimate';
-                      return (multiYearPricing[subjectKey]?.annual / 3).toFixed(2);
-                    })()} each
-                    <br />
-                    <strong>5 instalments:</strong> £{(() => {
-                      const multiYearPricing = isPro ? proPricing.multiYear : standardPricing.multiYear;
-                      const subjectKey = primaryPricing.subjectCount === 1 ? 1 : primaryPricing.subjectCount === 2 ? 2 : 'ultimate';
-                      return (multiYearPricing[subjectKey]?.annual / 5).toFixed(2);
-                    })()} each
-                    <br />
-                    <strong style={{ color: colors.success }}>Upfront (5% off):</strong> £{(() => {
-                      const multiYearPricing = isPro ? proPricing.multiYear : standardPricing.multiYear;
-                      const subjectKey = primaryPricing.subjectCount === 1 ? 1 : primaryPricing.subjectCount === 2 ? 2 : 'ultimate';
-                      return (multiYearPricing[subjectKey]?.annual * 0.95).toFixed(2);
-                    })()}
-                  </p>
-                </div>
-              </div>
-            )}
             <div style={{ ...scriptBoxStyle, background: colors.lightBlue, marginTop: '20px' }}>
               <span style={{ ...labelStyle, color: colors.dark }}>⚡ POWER CLOSES (if stuck)</span>
               <p style={{ margin: 0, fontSize: '13px', lineHeight: '2' }}>
