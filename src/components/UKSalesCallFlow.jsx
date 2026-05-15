@@ -841,6 +841,124 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 </p>
               </div>
             )}
+            {isExamYear(primaryChild.yearGroup) && (() => {
+              const examPaidSubjects = primaryChild.yearGroup === 'Year 13' ? primaryChild.subjects.filter(s => s !== 'English Literature') : primaryChild.subjects;
+              const examPaidCount = examPaidSubjects.length || 1;
+              const emcTier = examPaidCount >= 3 ? 'ultimate' : examPaidCount;
+              const emcPrice = emcPricing[emcTier];
+              const currentYearTable = isPro ? proPricing.currentYear : standardPricing.currentYear;
+              const currentTier = examPaidCount >= 3 ? 'ultimate' : examPaidCount;
+              const mainCoursePrice = currentYearTable[currentTier]?.annual;
+              const freeValue = mainCoursePrice + emcPrice;
+              return (
+                <>
+                  <div style={{ ...scriptBoxStyle, background: '#e8f5e9', border: `2px solid ${colors.success}` }}>
+                    <span style={{ ...labelStyle, color: colors.success }}>🎯 TIER 1: EXAM MASTERCLASS (SELL THIS FIRST)</span>
+                    <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                      "We're running our <strong>Exam Masterclass</strong> for {primaryChild.yearGroup === 'Year 11' ? 'GCSE' : 'A-Level'} students — this is an intensive course between now and the end of exams. Led by actual examiners who know exactly what the markers are looking for.
+                      <br /><br />
+                      This covers past papers, full curriculum review, and exam technique — everything {displayName(primaryChild)} needs to maximise their grade."
+                    </p>
+                    <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: `1px solid ${colors.success}` }}>
+                      <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: colors.success }}>EXAM MASTERCLASS PRICING ({examPaidCount} subject{examPaidCount > 1 ? 's' : ''}):</p>
+                      <p style={{ margin: '6px 0 0 0', fontSize: '13px', lineHeight: '1.8' }}>
+                        <strong>1 subject:</strong> £59<br />
+                        <strong>2 subjects:</strong> £109<br />
+                        <strong>All subjects:</strong> £149<br /><br />
+                        <strong style={{ color: colors.success }}>→ {displayName(primaryChild)}: £{emcPrice}</strong>
+                      </p>
+                    </div>
+                    <div style={{ marginTop: '12px', padding: '8px', background: '#f1f8e9', border: `1px dashed ${colors.success}` }}>
+                      <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                        <strong>"Should I get {displayName(primaryChild)} signed up for the Masterclass?"</strong>
+                      </p>
+                    </div>
+                  </div>
+                  <div style={{ ...scriptBoxStyle, background: '#e3f2fd', marginTop: '20px', border: `2px solid ${colors.primary}` }}>
+                    <span style={{ ...labelStyle, color: colors.primary }}>TIER 2: FULL COURSE OPTION</span>
+                    <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                      "And just so you know — the only difference between the Masterclass and our <strong>full course</strong> is that with the full course, {displayName(primaryChild)} also gets access to <strong>all the recorded lessons from the start of the year</strong>.
+                      <br /><br />
+                      Plus workbooks, homework after every lesson with full video solutions, and outside-of-the-lesson mentor support."
+                    </p>
+                    <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: `1px solid ${colors.primary}` }}>
+                      <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: colors.primary }}>FULL COURSE PRICING ({examPaidCount} subject{examPaidCount > 1 ? 's' : ''}) {isPro && <span style={{ color: colors.pro }}>(PRO)</span>}:</p>
+                      <p style={{ margin: '6px 0 0 0', fontSize: '13px', lineHeight: '1.8' }}>
+                        <strong>Total:</strong> £{mainCoursePrice}<br />
+                        <strong>2 instalments:</strong> £{(mainCoursePrice / 2).toFixed(2)} each<br />
+                        <strong style={{ color: colors.success }}>Upfront (5% off):</strong> £{(mainCoursePrice * 0.95).toFixed(2)}<br />
+                        <strong>Monthly:</strong> £{primaryPricing.monthly}/month — no lock-in, cancel anytime
+                      </p>
+                    </div>
+                  </div>
+                  {primaryChild.yearGroup === 'Year 11' && (
+                    <div style={{ ...scriptBoxStyle, background: '#f3e5f5', marginTop: '20px', border: `2px solid #7b1fa2` }}>
+                      <span style={{ ...labelStyle, color: '#7b1fa2' }}>🚀 TIER 3: YEAR 12 UPSELL (Year 11 Only)</span>
+                      <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                        "Now — if {displayName(primaryChild)} is going into Year 12 and taking any subjects we cover, there's a brilliant option.
+                        <br /><br />
+                        <strong>Sign up for Year 12 now, and get everything this year completely free — the full main course AND the Exam Masterclass.</strong>
+                        <br /><br />
+                        That means {displayName(primaryChild)} gets exam support right through GCSEs, and they're already locked in for September."
+                      </p>
+                      <div style={{ marginTop: '12px', padding: '10px', background: '#fce4ec', border: '1px solid #7b1fa2' }}>
+                        <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: '#7b1fa2' }}>ASK: What subjects will {displayName(primaryChild)} take in Year 12?</p>
+                        <p style={{ margin: '6px 0 0 0', fontSize: '13px', lineHeight: '1.8' }}>
+                          <strong>Eligible A-Level subjects:</strong> Maths, Biology, Chemistry, Physics, Further Maths, English Literature
+                        </p>
+                      </div>
+                      <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: '1px solid #7b1fa2' }}>
+                        <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: '#7b1fa2' }}>YEAR 12 PRICING (Next Year — This Year Free) {isPro && <span style={{ color: colors.pro }}>(PRO)</span>}:</p>
+                        <p style={{ margin: '6px 0 0 0', fontSize: '13px', lineHeight: '1.8' }}>
+                          {isPro ? (
+                            <>
+                              <strong>1 subject:</strong> £609 <span style={{ color: colors.darkGray }}>(was £{getProOriginalPrice('Year 12', 1, true)})</span><br />
+                              <strong>2 subjects:</strong> £974.40 <span style={{ color: colors.darkGray }}>(was £{getProOriginalPrice('Year 12', 2, true)})</span><br />
+                              <strong>3+ subjects:</strong> £1,309 <span style={{ color: colors.darkGray }}>(was £{getProOriginalPrice('Year 12', 3, true)})</span>
+                            </>
+                          ) : (
+                            <>
+                              <strong>1 subject:</strong> £419 <span style={{ color: colors.darkGray }}>(was £{getOriginalPrice('Year 12', 1, true)})</span><br />
+                              <strong>2 subjects:</strong> £754.20 <span style={{ color: colors.darkGray }}>(was £{getOriginalPrice('Year 12', 2, true)})</span><br />
+                              <strong>3+ subjects:</strong> £989 <span style={{ color: colors.darkGray }}>(was £{getOriginalPrice('Year 12', 3, true)})</span>
+                            </>
+                          )}
+                          <br /><br />
+                          <strong>4 instalments:</strong> {isPro ? (
+                            <>1 sub: £{(609 / 4).toFixed(2)} | 2 sub: £{(974.40 / 4).toFixed(2)} | 3+: £{(1309 / 4).toFixed(2)}</>
+                          ) : (
+                            <>1 sub: £{(419 / 4).toFixed(2)} | 2 sub: £{(754.20 / 4).toFixed(2)} | 3+: £{(989 / 4).toFixed(2)}</>
+                          )}
+                          <br />
+                          <strong style={{ color: colors.success }}>Upfront (5% off):</strong> {isPro ? (
+                            <>1 sub: £{(609 * 0.95).toFixed(2)} | 2 sub: £{(974.40 * 0.95).toFixed(2)} | 3+: £{(1309 * 0.95).toFixed(2)}</>
+                          ) : (
+                            <>1 sub: £{(419 * 0.95).toFixed(2)} | 2 sub: £{(754.20 * 0.95).toFixed(2)} | 3+: £{(989 * 0.95).toFixed(2)}</>
+                          )}
+                        </p>
+                      </div>
+                      <div style={{ marginTop: '12px', padding: '10px', background: '#e8f5e9', border: `1px solid ${colors.success}` }}>
+                        <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: colors.success }}>ANCHOR SCRIPT:</p>
+                        <p style={{ margin: '6px 0 0 0', fontSize: '14px', lineHeight: '1.8' }}>
+                          "The Year 12 programme plus everything you'd get free this year — the main course worth £{mainCoursePrice} and the Exam Masterclass worth £{emcPrice} — that's <strong>£{freeValue} of free access</strong> on top of the Year 12 course.
+                          <br /><br />
+                          But because you're signing up now, you only pay for Year 12. {displayName(primaryChild)} starts everything this week."
+                        </p>
+                        <p style={{ margin: '6px 0 0 0', fontSize: '11px', color: colors.darkGray }}>
+                          Year 12 anchor values: 1 sub = £{isPro ? getProOriginalPrice('Year 12', 1, true) : getOriginalPrice('Year 12', 1, true)} | 2 sub = £{isPro ? getProOriginalPrice('Year 12', 2, true) : getOriginalPrice('Year 12', 2, true)} | 3+ = £{isPro ? getProOriginalPrice('Year 12', 3, true) : getOriginalPrice('Year 12', 3, true)}
+                        </p>
+                      </div>
+                      <div style={{ marginTop: '12px', padding: '8px', background: '#f3e5f5', border: `1px dashed #7b1fa2` }}>
+                        <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                          <strong>"Should I get {displayName(primaryChild)} set up for Year 12 so they can start everything this week?"</strong>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+            {!isExamYear(primaryChild.yearGroup) && (
             <div style={{ ...scriptBoxStyle, borderLeft: `4px solid ${colors.accent}` }}>
               <span style={{ ...labelStyle, color: colors.dark }}>OUR PRICE {isPro && <span style={{ color: colors.pro }}>(PRO)</span>}</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
@@ -902,6 +1020,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 )}
               </p>
             </div>
+            )}
             <div style={scriptBoxStyle}>
               <span style={labelStyle}>Guarantee</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
@@ -920,12 +1039,14 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
               <br /><br />
               "Great, let me send you the link to get {displayName(primaryChild)} enrolled."
             </div>
+            {!isExamYear(primaryChild.yearGroup) && (
             <div style={{ ...scriptBoxStyle, background: colors.accent, marginTop: '20px' }}>
               <span style={{ ...labelStyle, color: colors.dark }}>IF YES → PAYMENT OPTIONS (A/B Close)</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
                 "Perfect! Would you prefer to <strong>pay upfront and save an extra 5%</strong> - that's <strong>£{hasSiblings ? priceInfo.upfront : primaryPricing.upfront}</strong> - or <strong>split it into {primaryPricing.isNextYear ? '4' : '2'} monthly instalments</strong> of £{hasSiblings ? priceInfo.instalments3 : primaryPricing.instalments3}?"
               </p>
             </div>
+            )}
             {isNextYearOffer(primaryChild.yearGroup) && (
               <div style={{ ...scriptBoxStyle, background: '#e3f2fd', marginTop: '20px', border: `2px solid ${colors.primary}` }}>
                 <span style={{ ...labelStyle, color: colors.primary }}>IF HESITANT ABOUT NEXT YEAR → THIS YEAR ONLY</span>
@@ -987,22 +1108,6 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 )}
               </p>
             </div>
-            {isExamYear(primaryChild.yearGroup) && (
-              <div style={{ ...scriptBoxStyle, background: '#e8f5e9', marginTop: '20px', border: `2px solid ${colors.success}` }}>
-                <span style={{ ...labelStyle, color: colors.success }}>EXAM MASTERCLASS (Y11/Y13 — PRIORITY SELL)</span>
-                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                  "For {primaryChild.yearGroup === 'Year 11' ? 'GCSE' : 'A-Level'} students, we have our <strong>Exam Masterclass</strong> — an intensive programme led by actual examiners who know exactly what the markers are looking for."
-                </p>
-                <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: `1px solid ${colors.success}` }}>
-                  <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: colors.success }}>EXAM MASTERCLASS PRICING:</p>
-                  <p style={{ margin: '6px 0 0 0', fontSize: '13px', lineHeight: '1.8' }}>
-                    <strong>1 subject:</strong> £59<br />
-                    <strong>2 subjects:</strong> £109<br />
-                    <strong>All subjects:</strong> £149
-                  </p>
-                </div>
-              </div>
-            )}
             <div style={{ ...scriptBoxStyle, background: '#fff8f0' }}>
               <span style={{ ...labelStyle, color: colors.warning }}>IF STILL HESITANT → £10 TRIAL</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
