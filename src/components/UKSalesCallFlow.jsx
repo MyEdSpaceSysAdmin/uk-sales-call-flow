@@ -594,12 +594,32 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
           </div>
           {primaryChild.subjects.length > 0 && (
             <div style={{ background: isPro ? '#f3e8ff' : colors.lightBlue, padding: '10px', borderRadius: 0, marginTop: '12px' }}>
-              <span style={{ ...sidebarLabelStyle, color: isPro ? colors.pro : colors.primary, marginTop: 0 }}>PRICING {isPro && '(PRO)'}</span>
-              <p style={{ margin: '4px 0', fontSize: '18px', fontWeight: '700', color: colors.dark }}>£{hasSiblings ? priceInfo.total?.toFixed(2) : primaryPricing.annual}</p>
-              <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>2x £{hasSiblings ? priceInfo.instalments3 : primaryPricing.instalments3} instalments</p>
-              <p style={{ margin: '4px 0', fontSize: '11px', color: colors.success, fontWeight: '600' }}>Upfront (5% off): £{hasSiblings ? priceInfo.upfront : primaryPricing.upfront}</p>
-              <p style={{ margin: '4px 0', fontSize: '11px', color: colors.darkGray }}>£{primaryPricing.pricePerHour}/lesson vs £50 tutor</p>
-              <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>Monthly: £{primaryPricing.monthly}/mo</p>
+              {isExamYear(primaryChild.yearGroup) ? (() => {
+                const examPaid = primaryChild.yearGroup === 'Year 13' ? primaryChild.subjects.filter(s => s !== 'English Literature') : primaryChild.subjects;
+                const examPaidCount = examPaid.length || 1;
+                const emcTier = examPaidCount >= 3 ? 'ultimate' : examPaidCount;
+                const emcPrice = emcPricing[emcTier];
+                const cyTable = isPro ? proPricing.currentYear : standardPricing.currentYear;
+                const cyPrice = cyTable[emcTier]?.annual;
+                return (
+                  <>
+                    <span style={{ ...sidebarLabelStyle, color: colors.success, marginTop: 0 }}>EMC PRICING ({examPaidCount} sub{examPaidCount > 1 ? 's' : ''})</span>
+                    <p style={{ margin: '4px 0', fontSize: '18px', fontWeight: '700', color: colors.dark }}>£{emcPrice}</p>
+                    <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>Exam Masterclass</p>
+                    <p style={{ margin: '6px 0 2px 0', fontSize: '10px', color: colors.darkGray, borderTop: '1px solid #ccc', paddingTop: '6px' }}>Full course: £{cyPrice}</p>
+                    <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>Monthly: £{primaryPricing.monthly}/mo</p>
+                  </>
+                );
+              })() : (
+                <>
+                  <span style={{ ...sidebarLabelStyle, color: isPro ? colors.pro : colors.primary, marginTop: 0 }}>PRICING {isPro && '(PRO)'} {primaryPricing.isNextYear && <span style={{ fontSize: '9px', color: colors.primary }}>— NEXT YEAR</span>}</span>
+                  <p style={{ margin: '4px 0', fontSize: '18px', fontWeight: '700', color: colors.dark }}>£{hasSiblings ? priceInfo.total?.toFixed(2) : primaryPricing.annual}</p>
+                  <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>{primaryPricing.isNextYear ? '4' : '2'}x £{hasSiblings ? priceInfo.instalments3 : primaryPricing.instalments3} instalments</p>
+                  <p style={{ margin: '4px 0', fontSize: '11px', color: colors.success, fontWeight: '600' }}>Upfront (5% off): £{hasSiblings ? priceInfo.upfront : primaryPricing.upfront}</p>
+                  <p style={{ margin: '4px 0', fontSize: '11px', color: colors.darkGray }}>£{primaryPricing.pricePerHour}/lesson vs £50 tutor</p>
+                  <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>Monthly: £{primaryPricing.monthly}/mo</p>
+                </>
+              )}
             </div>
           )}
           <button onClick={copyLeadInfo} style={{ width: '100%', padding: '10px', background: colors.accent, border: 'none', color: colors.dark, cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: '700', fontSize: '11px', marginTop: '12px', borderRadius: 0 }}>{copied ? '✓ COPIED' : '📋 COPY NOTES'}</button>
