@@ -755,16 +755,29 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 )}
               </p>
             </div>
-            {(primaryChild.yearGroup === 'Year 12' || primaryChild.yearGroup === 'Year 13') && primaryChild.subjects.includes('English Literature') && (
+            {(primaryChild.yearGroup === 'Year 12' || primaryChild.yearGroup === 'Year 13') && primaryChild.subjects.includes('English Literature') && (() => {
+              const otherSubjects = primaryChild.subjects.filter(s => s !== 'English Literature');
+              const hasOtherSubjects = otherSubjects.length > 0;
+              return (
               <div style={{ ...scriptBoxStyle, background: '#f3e5f5', border: `2px solid #7b1fa2` }}>
                 <span style={{ ...labelStyle, color: '#7b1fa2' }}>ENGLISH LITERATURE — EXPLAIN TO PARENT</span>
-                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                  "I should mention — English Literature works a little differently from our other subjects. Because A-Level students study different texts depending on their school and exam board, we run a set programme covering the most popular texts.
-                  <br /><br />
-                  <strong>It's completely free — included at no extra cost</strong> — so if any of the texts overlap with what {displayName(primaryChild)} is studying, they can join those classes and get the full benefit.
-                  <br /><br />
-                  The texts we currently cover are:"
-                </p>
+                {hasOtherSubjects ? (
+                  <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                    "I should mention — English Literature works a little differently from our other subjects. Because A-Level students study different texts depending on their school and exam board, we run a set programme covering the most popular texts.
+                    <br /><br />
+                    The great news is that <strong>English Literature is completely free</strong> — so {displayName(primaryChild)} would only be paying for {otherSubjects.join(' and ')}, and English Lit is added on top at no extra cost.
+                    <br /><br />
+                    The texts we currently cover are:"
+                  </p>
+                ) : (
+                  <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                    "So English Literature works a little differently at A-Level. Because students study different texts depending on their school and exam board, we run a set programme covering the most popular texts.
+                    <br /><br />
+                    <strong>It's completely free — there's no charge at all.</strong> If any of the texts overlap with what {displayName(primaryChild)} is studying, they can join those classes and get the full benefit.
+                    <br /><br />
+                    The texts we currently cover are:"
+                  </p>
+                )}
                 <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: '1px solid #7b1fa2' }}>
                   <p style={{ margin: 0, fontSize: '13px', lineHeight: '1.8' }}>
                     • <strong>The Handmaid's Tale</strong> — Margaret Atwood<br />
@@ -775,10 +788,26 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                   </p>
                 </div>
                 <p style={{ margin: '12px 0 0 0', fontSize: '14px', lineHeight: '1.8' }}>
-                  "Does {displayName(primaryChild)} study any of those? If so, they can join those classes straight away at no extra cost."
+                  {hasOtherSubjects ? (
+                    <>
+                      "Does {displayName(primaryChild)} study any of those? If so, they'll get access to those classes for free alongside {otherSubjects.join(' and ')}."
+                    </>
+                  ) : (
+                    <>
+                      "Does {displayName(primaryChild)} study any of those? If there's overlap, they can start attending those classes straight away — completely free."
+                    </>
+                  )}
                 </p>
+                <div style={{ marginTop: '12px', padding: '10px', background: '#f3e5f5', border: `1px dashed #7b1fa2` }}>
+                  <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: '#7b1fa2' }}>SHARE AFTER CONFIRMATION — English Lit YouTube Channel:</p>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '13px', lineHeight: '1.6' }}>
+                    <strong>https://www.youtube.com/@MyEdSpace_English/playlists</strong>
+                  </p>
+                  <button onClick={() => { navigator.clipboard.writeText('https://www.youtube.com/@MyEdSpace_English/playlists').catch(() => {}); }} style={{ marginTop: '6px', padding: '4px 12px', background: '#7b1fa2', color: colors.white, border: 'none', fontSize: '11px', fontWeight: '700', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>COPY LINK</button>
+                </div>
               </div>
-            )}
+              );
+            })()}
             <div style={scriptBoxStyle}>
               <span style={labelStyle}>What Their Week Looks Like</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
@@ -1163,7 +1192,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             <div style={{ ...scriptBoxStyle, background: '#fff8f0' }}>
               <span style={{ ...labelStyle, color: colors.warning }}>IF STILL HESITANT → £10 TRIAL</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                "Tell you what - try it for 10 days, just £10. Full access. No auto-renewal. Fair?"
+                "There's also an option to try it for 10 days for just £10. Full access, no auto-renewal — so there's no risk."
               </p>
             </div>
             <div style={{ ...scriptBoxStyle, background: colors.lightBlue, marginTop: '20px' }}>
@@ -1192,7 +1221,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             <div style={scriptBoxStyle}>
               <span style={labelStyle}>WHILE THEY PAY</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                "I'm happy to stay on the line while you register {displayName(primaryChild)} - it should only take 1 or 2 minutes and I can help answer any of your questions and confirm if we've received your payment. Sound good?"
+                "I'm happy to stay on the line while you register {displayName(primaryChild)} — it should only take a minute or two and I can confirm once we've received your payment."
               </p>
             </div>
             <div style={{ ...tipBoxStyle, background: colors.accent }}><strong>⏳ Wait for them to complete payment</strong></div>
@@ -1233,7 +1262,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
                   "I completely understand - it's an important decision. <strong>What would make this a yes for you?</strong>"
                   <br /><br />
-                  <strong>If vague:</strong> "Tell you what - why don't we do the £10 trial? That way you can try it properly, see how {hasSiblings ? 'the kids respond' : `${displayName(primaryChild)} responds`}, and then decide. No commitment beyond the £10."
+                  <strong>If vague:</strong> "We also have a £10 trial — 10 days, full access, no auto-renewal. That way you can see how {hasSiblings ? 'the children respond' : `${displayName(primaryChild)} responds`} before making any commitment."
                   <br /><br />
                   <strong>If fit concern:</strong> "That's what the 14-day guarantee is for. Try everything - if it's not working, full refund."
                 </p>
@@ -1245,7 +1274,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
                   "Completely understand. <strong>If this was completely up to you, would you have any hesitation?</strong>"
                   <br /><br />
-                  <strong>If no hesitation:</strong> "So you're sold - you just need them on board. What do you think they'd want to know?"
+                  <strong>If no hesitation:</strong> "It sounds like you're happy with what we offer — you just need them on board. What would they want to know?"
                   <br /><br />
                   <strong>If cost:</strong> "This is £{primaryPricing.monthly}/month versus £{primaryPricing.tutorCost} for tutoring. I can send all the details."
                   <br /><br />
