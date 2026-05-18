@@ -796,7 +796,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                   <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
                     "I should mention — English Literature works a little differently from our other subjects. Because A-Level students study different texts depending on their school and exam board, we run a set programme covering the most popular texts.
                     <br /><br />
-                    The great news is that <strong>English Literature is completely free</strong> — so {displayName(primaryChild)} would only be paying for {otherSubjects.join(' and ')}, and English Lit is added on top at no extra cost.
+                    <strong>English Literature is included at no additional cost</strong> — so {displayName(primaryChild)} would only be paying for {otherSubjects.join(' and ')}, and English Lit is part of the programme on top of that.
                     <br /><br />
                     The texts we currently cover are:"
                   </p>
@@ -804,7 +804,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                   <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
                     "So English Literature works a little differently at A-Level. Because students study different texts depending on their school and exam board, we run a set programme covering the most popular texts.
                     <br /><br />
-                    <strong>It's completely free — there's no charge at all.</strong> If any of the texts overlap with what {displayName(primaryChild)} is studying, they can join those classes and get the full benefit.
+                    <strong>It's included as part of the programme — there's no additional charge.</strong> If any of the texts overlap with what {displayName(primaryChild)} is studying, they can join those classes and get the full benefit.
                     <br /><br />
                     The texts we currently cover are:"
                   </p>
@@ -821,11 +821,11 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 <p style={{ margin: '12px 0 0 0', fontSize: '14px', lineHeight: '1.8' }}>
                   {hasOtherSubjects ? (
                     <>
-                      "Does {displayName(primaryChild)} study any of those? If so, they'll get access to those classes for free alongside {otherSubjects.join(' and ')}."
+                      "Does {displayName(primaryChild)} study any of those? If so, they'll have access to those classes alongside {otherSubjects.join(' and ')} at no extra cost."
                     </>
                   ) : (
                     <>
-                      "Does {displayName(primaryChild)} study any of those? If there's overlap, they can start attending those classes straight away — completely free."
+                      "Does {displayName(primaryChild)} study any of those? If there's overlap, they can start attending those classes straight away — it's all included."
                     </>
                   )}
                 </p>
@@ -912,16 +912,16 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             <div style={scriptBoxStyle}>
               <span style={labelStyle}>Price Anchor</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                "So let me walk you through the investment. An average private tutor charges around £50 an hour. Two lessons a week{primaryPricing.subjectCount > 1 ? ` per subject - that's ${primaryPricing.subjectCount} subjects, so ${primaryPricing.subjectCount * 8} lessons a month` : ', that\'s 8 lessons a month'} - <strong>£{primaryPricing.subjectCount * 400} a month</strong> just for their time. No workbooks, no video solutions, no recordings."
+                "Let me give you an idea of what this looks like. An average private tutor charges around £50 an hour. Two lessons a week{primaryPricing.subjectCount > 1 ? ` per subject - that's ${primaryPricing.subjectCount} subjects, so ${primaryPricing.subjectCount * 8} lessons a month` : ', that\'s 8 lessons a month'} - <strong>£{primaryPricing.subjectCount * 400} a month</strong> just for their time. No workbooks, no video solutions, no recordings."
               </p>
             </div>
             {isNextYearOffer(primaryChild.yearGroup) && (
               <div style={{ ...scriptBoxStyle, borderLeft: `4px solid ${colors.primary}`, background: '#f0f4ff' }}>
-                <span style={{ ...labelStyle, color: colors.primary }}>NEXT YEAR OFFER — GET THE REST OF THIS YEAR FREE</span>
+                <span style={{ ...labelStyle, color: colors.primary }}>NEXT YEAR PROGRAMME — EARLY ACCESS RECOMMENDATION</span>
                 <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                  "Great news — if you sign up for next year's course today, {displayName(primaryChild)} gets access to the rest of this year completely free. That means they start lessons this week, get all the recordings from this year, and they're already locked in for September.
+                  "What we always recommend is that students start as early as possible rather than waiting until September. From what we've seen, students who are already familiar with the platform, the teachers, and the routine by the time {primaryChild.yearGroup === 'Year 9' ? 'Year 10' : primaryChild.yearGroup === 'Year 10' ? 'Year 11' : primaryChild.yearGroup === 'Year 12' ? 'Year 13' : 'next year'} begins consistently perform better.
                   <br /><br />
-                  Here's what's included..."
+                  So if you join the {primaryChild.yearGroup === 'Year 9' ? 'Year 10' : primaryChild.yearGroup === 'Year 10' ? 'Year 11' : primaryChild.yearGroup === 'Year 12' ? 'Year 13' : 'next year'} programme now, {displayName(primaryChild)} gets access to everything from now until September — that's built into the programme. They start lessons this week, get all the recordings, and are already set up for the new academic year."
                 </p>
               </div>
             )}
@@ -1037,11 +1037,11 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                     <div style={{ ...scriptBoxStyle, background: '#f3e5f5', marginTop: '20px', border: `2px solid #7b1fa2` }}>
                       <span style={{ ...labelStyle, color: '#7b1fa2' }}>🚀 TIER 3: YEAR 12 UPSELL (Year 11 Only)</span>
                       <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                        "Now — if {displayName(primaryChild)} is going into Year 12 and taking any subjects we cover, there's a brilliant option.
+                        "Now — if {displayName(primaryChild)} is going into Year 12 and taking any subjects we cover, I'd recommend considering the Year 12 programme now.
                         <br /><br />
-                        <strong>Sign up for Year 12 now, and get everything this year completely free — the full main course AND the Exam Masterclass.</strong>
+                        The same principle applies — <strong>students who start early perform better</strong>. If you join the Year 12 programme, access to everything this year is included — the full main course and the Exam Masterclass.
                         <br /><br />
-                        That means {displayName(primaryChild)} gets exam support right through GCSEs, and they're already locked in for September."
+                        That means {displayName(primaryChild)} gets exam support right through GCSEs and is already set up for September."
                       </p>
                       <div style={{ marginTop: '12px', padding: '10px', background: '#fce4ec', border: '1px solid #7b1fa2' }}>
                         <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: '#7b1fa2' }}>ASK: What subjects will {displayName(primaryChild)} take in Year 12?</p>
@@ -1050,7 +1050,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                         </p>
                       </div>
                       <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: '1px solid #7b1fa2' }}>
-                        <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: '#7b1fa2' }}>YEAR 12 PRICING (Next Year — This Year Free) {isPro && <span style={{ color: colors.pro }}>(PRO)</span>}:</p>
+                        <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: '#7b1fa2' }}>YEAR 12 PRICING (Next Year — This Year Included) {isPro && <span style={{ color: colors.pro }}>(PRO)</span>}:</p>
                         <p style={{ margin: '6px 0 0 0', fontSize: '13px', lineHeight: '1.8' }}>
                           {isPro ? (
                             <>
@@ -1082,9 +1082,9 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                       <div style={{ marginTop: '12px', padding: '10px', background: '#e8f5e9', border: `1px solid ${colors.success}` }}>
                         <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: colors.success }}>ANCHOR SCRIPT:</p>
                         <p style={{ margin: '6px 0 0 0', fontSize: '14px', lineHeight: '1.8' }}>
-                          "The Year 12 programme plus everything you'd get free this year — the main course worth £{mainCoursePrice} and the Exam Masterclass worth £{emcPrice} — that's <strong>£{freeValue} of free access</strong> on top of the Year 12 course.
+                          "The Year 12 programme normally costs £[anchor] on its own. On top of that, {displayName(primaryChild)} also gets access to the main course worth £{mainCoursePrice} and the Exam Masterclass worth £{emcPrice} — that's <strong>£{freeValue} worth of additional access</strong> included in the programme.
                           <br /><br />
-                          But because you're signing up now, you only pay for Year 12. {displayName(primaryChild)} starts everything this week."
+                          You're only paying for Year 12. {displayName(primaryChild)} can start everything this week."
                         </p>
                         <p style={{ margin: '6px 0 0 0', fontSize: '11px', color: colors.darkGray }}>
                           Year 12 anchor values: 1 sub = £{isPro ? getProOriginalPrice('Year 12', 1, true) : getOriginalPrice('Year 12', 1, true)} | 2 sub = £{isPro ? getProOriginalPrice('Year 12', 2, true) : getOriginalPrice('Year 12', 2, true)} | 3+ = £{isPro ? getProOriginalPrice('Year 12', 3, true) : getOriginalPrice('Year 12', 3, true)}
@@ -1116,11 +1116,11 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                     <br />
                     {primaryPricing.isNextYear ? (
                       <>
-                        The next year's course plus the rest of this year would normally cost <strong>£{priceInfo.totalOriginal}</strong>. But if you sign up today, everything between now and September is completely free — you only pay <strong>£{priceInfo.total.toFixed(2)}</strong> for next year.
+                        The full programme would normally be valued at <strong>£{priceInfo.totalOriginal}</strong>. Because we recommend starting before September, access from now until the new academic year is included — the fee is <strong>£{priceInfo.total.toFixed(2)}</strong>.
                         <br /><br />
-                        That's a saving of over £{(priceInfo.totalOriginal - priceInfo.total).toFixed(0)}, and your children start this week.
+                        That's £{(priceInfo.totalOriginal - priceInfo.total).toFixed(0)} less than the standard rate, and your children can start this week.
                         <br /><br />
-                        That's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
+                        That works out to <strong>£{primaryPricing.pricePerHour} per lesson</strong>, compared to around £50 for a private tutor."
                       </>
                     ) : (
                       <>
@@ -1136,11 +1136,11 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                   <>
                     {primaryPricing.isNextYear ? (
                       <>
-                        The next year's course plus the rest of this year would normally cost <strong>£{primaryPricing.original}</strong>. But if you sign up today, everything between now and September is completely free — you only pay <strong>£{primaryPricing.annual}</strong> for next year.
+                        The full programme would normally be valued at <strong>£{primaryPricing.original}</strong>. Because we recommend starting before September, access from now until the new academic year is included — the fee is <strong>£{primaryPricing.annual}</strong>.
                         <br /><br />
-                        That's a saving of over £{primaryPricing.saving}, and {displayName(primaryChild)} starts this week.
+                        That's £{primaryPricing.saving} less than the standard rate, and {displayName(primaryChild)} can start this week.
                         <br /><br />
-                        That's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
+                        That works out to <strong>£{primaryPricing.pricePerHour} per lesson</strong>, compared to around £50 for a private tutor."
                       </>
                     ) : (
                       <>
@@ -1186,7 +1186,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
               <div style={{ ...scriptBoxStyle, background: '#e3f2fd', marginTop: '20px', border: `2px solid ${colors.primary}` }}>
                 <span style={{ ...labelStyle, color: colors.primary }}>IF HESITANT ABOUT NEXT YEAR → THIS YEAR ONLY</span>
                 <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                  "I understand — committing to next year right now is a big step. We can also do just the rest of this year for <strong>£{(() => {
+                  "I completely understand — that's a bigger commitment. We can also start with just the rest of this year for <strong>£{(() => {
                     const currentYearPricing = isPro ? proPricing.currentYear : standardPricing.currentYear;
                     const subjectKey = primaryPricing.subjectCount === 1 ? 1 : primaryPricing.subjectCount === 2 ? 2 : 'ultimate';
                     return currentYearPricing[subjectKey]?.annual;
