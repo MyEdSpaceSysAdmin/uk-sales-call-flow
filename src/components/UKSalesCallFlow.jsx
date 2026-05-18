@@ -610,7 +610,18 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                     <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>Monthly: £{primaryPricing.monthly}/mo</p>
                   </>
                 );
-              })() : (
+              })() : primaryChild.yearGroup === 'Year 9' && primaryChild.subjects.includes('Science') && primaryPricing.subjectCount < 3 ? (
+                <>
+                  <span style={{ ...sidebarLabelStyle, color: colors.warning, marginTop: 0 }}>Y10 PRICING {isPro && '(PRO)'}</span>
+                  <p style={{ margin: '4px 0', fontSize: '11px', fontWeight: '700', color: colors.dark }}>
+                    1 sub: £{isPro ? '609' : '419'}<br />
+                    2 sub: £{isPro ? '974.40' : '754.20'}<br />
+                    3+ sub: £{isPro ? '1,309' : '989'}
+                  </p>
+                  <p style={{ margin: '4px 0', fontSize: '10px', color: colors.darkGray, borderTop: '1px solid #ccc', paddingTop: '4px' }}>Depends on Y10 science choices</p>
+                  <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>Monthly: £{isPro ? '110' : '80'}/£{isPro ? '198' : '144'}/£{isPro ? '240' : '180'}</p>
+                </>
+              ) : (
                 <>
                   <span style={{ ...sidebarLabelStyle, color: isPro ? colors.pro : colors.primary, marginTop: 0 }}>PRICING {isPro && '(PRO)'} {primaryPricing.isNextYear && <span style={{ fontSize: '9px', color: colors.primary }}>— NEXT YEAR</span>}</span>
                   <p style={{ margin: '4px 0', fontSize: '18px', fontWeight: '700', color: colors.dark }}>£{hasSiblings ? priceInfo.total?.toFixed(2) : primaryPricing.annual}</p>
@@ -914,6 +925,64 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 </p>
               </div>
             )}
+            {primaryChild.yearGroup === 'Year 9' && primaryChild.subjects.includes('Science') && primaryPricing.subjectCount < 3 && (
+              <div style={{ ...scriptBoxStyle, background: '#fff3e0', border: `2px solid ${colors.warning}` }}>
+                <span style={{ ...labelStyle, color: colors.warning }}>📋 YEAR 10: SCIENCE SPLITS — CONFIRM BEFORE PRICING</span>
+                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                  "Now, one thing to be aware of for Year 10 — Science splits into <strong>Biology, Chemistry, and Physics</strong> as separate subjects. So for {displayName(primaryChild)}'s Year 10 programme, which sciences are they most interested in continuing with?"
+                </p>
+                <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: `1px solid ${colors.warning}` }}>
+                  <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: colors.warning }}>YEAR 10 NEXT YEAR PRICING — BASED ON THEIR ANSWER {isPro && <span style={{ color: colors.pro }}>(PRO)</span>}:</p>
+                  <table style={{ width: '100%', marginTop: '8px', fontSize: '12px', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid #ddd' }}>
+                        <th style={{ textAlign: 'left', padding: '4px 8px' }}></th>
+                        <th style={{ textAlign: 'center', padding: '4px 8px' }}>1 Subject</th>
+                        <th style={{ textAlign: 'center', padding: '4px 8px' }}>2 Subjects</th>
+                        <th style={{ textAlign: 'center', padding: '4px 8px', color: colors.primary }}>3+ (Ultimate)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style={{ borderBottom: '1px solid #eee' }}>
+                        <td style={{ padding: '4px 8px', fontWeight: '700' }}>Price</td>
+                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? '609' : '419'}</td>
+                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? '974.40' : '754.20'}</td>
+                        <td style={{ textAlign: 'center', padding: '4px 8px', fontWeight: '700', color: colors.primary }}>£{isPro ? '1,309' : '989'}</td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #eee', color: colors.darkGray }}>
+                        <td style={{ padding: '4px 8px' }}>Was</td>
+                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? getProOriginalPrice('Year 10', 1, true) : getOriginalPrice('Year 10', 1, true)}</td>
+                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? getProOriginalPrice('Year 10', 2, true) : getOriginalPrice('Year 10', 2, true)}</td>
+                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? getProOriginalPrice('Year 10', 3, true) : getOriginalPrice('Year 10', 3, true)}</td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #eee' }}>
+                        <td style={{ padding: '4px 8px' }}>4x instalments</td>
+                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? (609/4).toFixed(2) : (419/4).toFixed(2)}</td>
+                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? (974.40/4).toFixed(2) : (754.20/4).toFixed(2)}</td>
+                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? (1309/4).toFixed(2) : (989/4).toFixed(2)}</td>
+                      </tr>
+                      <tr style={{ color: colors.success }}>
+                        <td style={{ padding: '4px 8px' }}>Upfront (5% off)</td>
+                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? (609*0.95).toFixed(2) : (419*0.95).toFixed(2)}</td>
+                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? (974.40*0.95).toFixed(2) : (754.20*0.95).toFixed(2)}</td>
+                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? (1309*0.95).toFixed(2) : (989*0.95).toFixed(2)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <p style={{ margin: '8px 0 0 0', fontSize: '11px', color: colors.darkGray }}>
+                    Quote the column that matches what the parent chooses. Monthly: £{isPro ? '110' : '80'} / £{isPro ? '198' : '144'} / £{isPro ? '240' : '180'}
+                  </p>
+                </div>
+              </div>
+            )}
+            {primaryChild.yearGroup === 'Year 9' && primaryChild.subjects.includes('Science') && primaryPricing.subjectCount >= 3 && (
+              <div style={{ ...scriptBoxStyle, background: '#e8f5e9', border: `1px solid ${colors.success}` }}>
+                <span style={{ ...labelStyle, color: colors.success }}>📋 YEAR 10: SCIENCE SPLITS (No Pricing Impact)</span>
+                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                  "One thing to note — in Year 10, Science splits into Biology, Chemistry, and Physics. Since {displayName(primaryChild)} is on our Ultimate Pass, the pricing stays the same regardless of how many sciences they take. But which ones are they most interested in so we can get them set up?"
+                </p>
+              </div>
+            )}
             {isExamYear(primaryChild.yearGroup) && (() => {
               const examPaidSubjects = primaryChild.yearGroup === 'Year 13' ? primaryChild.subjects.filter(s => s !== 'English Literature') : primaryChild.subjects;
               const examPaidCount = examPaidSubjects.length || 1;
@@ -1035,14 +1104,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             <div style={{ ...scriptBoxStyle, borderLeft: `4px solid ${colors.accent}` }}>
               <span style={{ ...labelStyle, color: colors.dark }}>OUR PRICE {isPro && <span style={{ color: colors.pro }}>(PRO)</span>}</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                {teacherInfo && teacherInfo.count === 1 ? (
-                  `"With us, you get ${teacherInfo.teachers[0].name} teaching ${displayName(primaryChild)} twice a week...`
-                ) : (
-                  `"With us, you get our top 1% teachers teaching ${displayName(primaryChild)} twice a week${primaryPricing.subjectCount > 1 ? ' per subject' : ''}...`
-                )}
-                <br />PLUS the workbooks so they can focus on learning...
-                <br />PLUS homework after every lesson with full video solutions...
-                <br />PLUS every lesson recorded to watch back anytime...
+                "So that includes everything we've discussed — the live lessons twice a week{primaryPricing.subjectCount > 1 ? ' per subject' : ''}, workbooks, homework with video solutions, recordings, and outside-of-the-lesson mentor support.
                 <br /><br />
                 {hasSiblings ? (
                   <>
@@ -1093,34 +1155,6 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 )}
               </p>
             </div>
-            )}
-            {primaryChild.yearGroup === 'Year 9' && primaryChild.subjects.includes('Science') && (
-              <div style={{ ...scriptBoxStyle, background: '#fff3e0', border: `1px solid ${colors.warning}` }}>
-                <span style={{ ...labelStyle, color: colors.warning }}>📋 YEAR 10: SCIENCE SPLITS INTO 3 SUBJECTS</span>
-                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                  "Just so you're aware — in Year 10, Science splits into <strong>Biology, Chemistry, and Physics</strong> as separate subjects. So when we set {displayName(primaryChild)} up for next year, they'll choose which science(s) to continue with.
-                  <br /><br />
-                  Which of the three is {displayName(primaryChild)} most interested in?"
-                </p>
-                {primaryPricing.subjectCount < 3 && (
-                  <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: `1px solid ${colors.warning}` }}>
-                    <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: colors.warning }}>PRICING IMPLICATIONS (rep reference — do not read out):</p>
-                    <p style={{ margin: '6px 0 0 0', fontSize: '12px', lineHeight: '1.8', color: colors.darkGray }}>
-                      Currently on <strong>{primaryPricing.subjectCount} subject{primaryPricing.subjectCount > 1 ? 's' : ''}</strong> pricing in Year 9. In Year 10, each science counts as its own subject:
-                      <br />• <strong>1 science{primaryPricing.subjectCount === 2 ? ' + their other subject' : ''}:</strong> stays on {primaryPricing.subjectCount} subject{primaryPricing.subjectCount > 1 ? 's' : ''} pricing — no change
-                      <br />• <strong>{primaryPricing.subjectCount === 1 ? '2 sciences' : '2 sciences + other subject (3 total)'}:</strong> {primaryPricing.subjectCount === 1 ? 'moves to 2 subjects pricing' : 'moves to Ultimate Pass pricing'}
-                      <br />• <strong>{primaryPricing.subjectCount === 1 ? '3 sciences or 2 sciences + another subject' : 'All 3 sciences + other subject'}:</strong> Ultimate Pass pricing
-                    </p>
-                  </div>
-                )}
-                {primaryPricing.subjectCount >= 3 && (
-                  <div style={{ marginTop: '12px', padding: '10px', background: '#e8f5e9', border: `1px solid ${colors.success}` }}>
-                    <p style={{ margin: 0, fontSize: '12px', color: colors.darkGray }}>
-                      ✓ Already on Ultimate Pass — science split has no pricing impact. This is just informational.
-                    </p>
-                  </div>
-                )}
-              </div>
             )}
             <div style={scriptBoxStyle}>
               <span style={labelStyle}>Guarantee</span>
