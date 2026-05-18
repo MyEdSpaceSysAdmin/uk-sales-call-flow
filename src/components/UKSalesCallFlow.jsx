@@ -619,7 +619,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
           {currentStep === 'clarify' && (<>
             <div style={sectionHeaderStyle}><h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800' }}>CLARIFY</h2><p style={{ margin: '4px 0 0 0', fontSize: '13px', opacity: 0.85 }}>Understand the Situation (2-3 min)</p></div>
             <div style={tipBoxStyle}><strong>🎯 GOAL:</strong> Get names, year groups, and subjects.</div>
-            <div style={scriptBoxStyle}><span style={labelStyle}>Get Child's Name</span><p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>"So first things first - who's the lucky one we're helping today? What's your child's name?"</p></div>
+            <div style={scriptBoxStyle}><span style={labelStyle}>Get Child's Name</span><p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>"So first things first - can you tell me your child's name and a little bit about them?"</p></div>
             <div style={scriptBoxStyle}><span style={labelStyle}>Siblings Check</span><p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>"And do you have any other children who might benefit from some support too?"</p></div>
             {hasSiblings && <div style={{ ...tipBoxStyle, background: colors.accent }}><strong>👨‍👩‍👧‍👦 Siblings added!</strong> 20% off less expensive package.</div>}
             <div style={scriptBoxStyle}><span style={labelStyle}>Confirm Year Group{hasSiblings ? 's' : ''}</span><p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>{hasSiblings ? `"Great. What year is ${displayName(children[0])} in? And ${displayName(children[1])}?"` : `"Great. What year is ${displayName(primaryChild)} in?"`}</p></div>
@@ -670,7 +670,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             <div style={scriptBoxStyle}>
               <span style={labelStyle}>Transition Into Discovery</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                "Okay, amazing. So that I can give you the most tailored advice for {displayName(primaryChild)}, can I ask you a few questions about what's been going on?"
+                "That's helpful, thank you. So that I can give you the most tailored advice for {displayName(primaryChild)}, can I ask you a few questions about what's been going on?"
               </p>
             </div>
             <div style={{ ...tipBoxStyle, background: colors.accent }}><strong>✓ Wait for "yes" / "of course" before asking questions</strong></div>
@@ -755,6 +755,30 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 )}
               </p>
             </div>
+            {(primaryChild.yearGroup === 'Year 12' || primaryChild.yearGroup === 'Year 13') && primaryChild.subjects.includes('English Literature') && (
+              <div style={{ ...scriptBoxStyle, background: '#f3e5f5', border: `2px solid #7b1fa2` }}>
+                <span style={{ ...labelStyle, color: '#7b1fa2' }}>ENGLISH LITERATURE — EXPLAIN TO PARENT</span>
+                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                  "I should mention — English Literature works a little differently from our other subjects. Because A-Level students study different texts depending on their school and exam board, we run a set programme covering the most popular texts.
+                  <br /><br />
+                  <strong>It's completely free — included at no extra cost</strong> — so if any of the texts overlap with what {displayName(primaryChild)} is studying, they can join those classes and get the full benefit.
+                  <br /><br />
+                  The texts we currently cover are:"
+                </p>
+                <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: '1px solid #7b1fa2' }}>
+                  <p style={{ margin: 0, fontSize: '13px', lineHeight: '1.8' }}>
+                    • <strong>The Handmaid's Tale</strong> — Margaret Atwood<br />
+                    • <strong>A Streetcar Named Desire</strong> — Tennessee Williams<br />
+                    • <strong>The Great Gatsby</strong> — F. Scott Fitzgerald<br />
+                    • <strong>Othello</strong> — William Shakespeare<br />
+                    • <strong>Poetry Anthology</strong> — Various Poets
+                  </p>
+                </div>
+                <p style={{ margin: '12px 0 0 0', fontSize: '14px', lineHeight: '1.8' }}>
+                  "Does {displayName(primaryChild)} study any of those? If so, they can join those classes straight away at no extra cost."
+                </p>
+              </div>
+            )}
             <div style={scriptBoxStyle}>
               <span style={labelStyle}>What Their Week Looks Like</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
@@ -766,7 +790,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 <br /><br />
                 On average, <strong>each student sends around 25 messages per lesson</strong> - that level of engagement is incomparable to a normal classroom.
                 <br /><br />
-                Does that make sense?"
+                Any questions on that before I continue?"
               </p>
             </div>
             <div style={{ ...scriptBoxStyle, borderLeft: `4px solid ${colors.primary}` }}>
@@ -784,7 +808,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             <div style={{ ...scriptBoxStyle, borderLeft: `4px solid ${colors.lightBlue}` }}>
               <span style={{ ...labelStyle, color: colors.primary }}>RECORDINGS</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                "Oh, and one more thing...
+                "There's one more thing families find really valuable...
                 <br /><br />
                 <strong>Every lesson is recorded</strong> and available instantly.
                 <br /><br />
@@ -792,7 +816,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 <br /><br />
                 Some kids actually prefer the recordings because they can pause and rewatch the tricky parts.
                 <br /><br />
-                Sound good so far?"
+                Any questions so far?"
               </p>
             </div>
             <div style={scriptBoxStyle}>
@@ -816,9 +840,9 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 <br /><br />
                 That's exactly why we have a <strong>14-day money-back guarantee</strong>. Two weeks to see if it clicks. If not, full refund, no hassle.
                 <br /><br />
-                But honestly? Most families don't need it. We have <strong>95% parent satisfaction</strong> and 1,700+ five-star reviews on Trustpilot.
+                In practice, very few families ever use it. We have <strong>95% parent satisfaction</strong> and 1,700+ five-star reviews on Trustpilot.
                 <br /><br />
-                <strong>So - how does all of that sound so far?</strong>"
+                <strong>Based on what you've told me about {displayName(primaryChild)}, how does this compare to what they're currently getting?</strong>"
               </p>
             </div>
           </>)}
@@ -1020,6 +1044,34 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 )}
               </p>
             </div>
+            )}
+            {primaryChild.yearGroup === 'Year 9' && primaryChild.subjects.includes('Science') && (
+              <div style={{ ...scriptBoxStyle, background: '#fff3e0', border: `1px solid ${colors.warning}` }}>
+                <span style={{ ...labelStyle, color: colors.warning }}>📋 YEAR 10: SCIENCE SPLITS INTO 3 SUBJECTS</span>
+                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                  "Just so you're aware — in Year 10, Science splits into <strong>Biology, Chemistry, and Physics</strong> as separate subjects. So when we set {displayName(primaryChild)} up for next year, they'll choose which science(s) to continue with.
+                  <br /><br />
+                  Which of the three is {displayName(primaryChild)} most interested in?"
+                </p>
+                {primaryPricing.subjectCount < 3 && (
+                  <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: `1px solid ${colors.warning}` }}>
+                    <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: colors.warning }}>PRICING IMPLICATIONS (rep reference — do not read out):</p>
+                    <p style={{ margin: '6px 0 0 0', fontSize: '12px', lineHeight: '1.8', color: colors.darkGray }}>
+                      Currently on <strong>{primaryPricing.subjectCount} subject{primaryPricing.subjectCount > 1 ? 's' : ''}</strong> pricing in Year 9. In Year 10, each science counts as its own subject:
+                      <br />• <strong>1 science{primaryPricing.subjectCount === 2 ? ' + their other subject' : ''}:</strong> stays on {primaryPricing.subjectCount} subject{primaryPricing.subjectCount > 1 ? 's' : ''} pricing — no change
+                      <br />• <strong>{primaryPricing.subjectCount === 1 ? '2 sciences' : '2 sciences + other subject (3 total)'}:</strong> {primaryPricing.subjectCount === 1 ? 'moves to 2 subjects pricing' : 'moves to Ultimate Pass pricing'}
+                      <br />• <strong>{primaryPricing.subjectCount === 1 ? '3 sciences or 2 sciences + another subject' : 'All 3 sciences + other subject'}:</strong> Ultimate Pass pricing
+                    </p>
+                  </div>
+                )}
+                {primaryPricing.subjectCount >= 3 && (
+                  <div style={{ marginTop: '12px', padding: '10px', background: '#e8f5e9', border: `1px solid ${colors.success}` }}>
+                    <p style={{ margin: 0, fontSize: '12px', color: colors.darkGray }}>
+                      ✓ Already on Ultimate Pass — science split has no pricing impact. This is just informational.
+                    </p>
+                  </div>
+                )}
+              </div>
             )}
             <div style={scriptBoxStyle}>
               <span style={labelStyle}>Guarantee</span>
