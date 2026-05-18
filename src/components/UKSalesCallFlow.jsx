@@ -594,12 +594,32 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
           </div>
           {primaryChild.subjects.length > 0 && (
             <div style={{ background: isPro ? '#f3e8ff' : colors.lightBlue, padding: '10px', borderRadius: 0, marginTop: '12px' }}>
-              <span style={{ ...sidebarLabelStyle, color: isPro ? colors.pro : colors.primary, marginTop: 0 }}>PRICING {isPro && '(PRO)'}</span>
-              <p style={{ margin: '4px 0', fontSize: '18px', fontWeight: '700', color: colors.dark }}>£{hasSiblings ? priceInfo.total?.toFixed(2) : primaryPricing.annual}</p>
-              <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>2x £{hasSiblings ? priceInfo.instalments3 : primaryPricing.instalments3} instalments</p>
-              <p style={{ margin: '4px 0', fontSize: '11px', color: colors.success, fontWeight: '600' }}>Upfront (5% off): £{hasSiblings ? priceInfo.upfront : primaryPricing.upfront}</p>
-              <p style={{ margin: '4px 0', fontSize: '11px', color: colors.darkGray }}>£{primaryPricing.pricePerHour}/lesson vs £50 tutor</p>
-              <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>Monthly: £{primaryPricing.monthly}/mo</p>
+              {isExamYear(primaryChild.yearGroup) ? (() => {
+                const examPaid = primaryChild.yearGroup === 'Year 13' ? primaryChild.subjects.filter(s => s !== 'English Literature') : primaryChild.subjects;
+                const examPaidCount = examPaid.length || 1;
+                const emcTier = examPaidCount >= 3 ? 'ultimate' : examPaidCount;
+                const emcPrice = emcPricing[emcTier];
+                const cyTable = isPro ? proPricing.currentYear : standardPricing.currentYear;
+                const cyPrice = cyTable[emcTier]?.annual;
+                return (
+                  <>
+                    <span style={{ ...sidebarLabelStyle, color: colors.success, marginTop: 0 }}>EMC PRICING ({examPaidCount} sub{examPaidCount > 1 ? 's' : ''})</span>
+                    <p style={{ margin: '4px 0', fontSize: '18px', fontWeight: '700', color: colors.dark }}>£{emcPrice}</p>
+                    <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>Exam Masterclass</p>
+                    <p style={{ margin: '6px 0 2px 0', fontSize: '10px', color: colors.darkGray, borderTop: '1px solid #ccc', paddingTop: '6px' }}>Full course: £{cyPrice}</p>
+                    <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>Monthly: £{primaryPricing.monthly}/mo</p>
+                  </>
+                );
+              })() : (
+                <>
+                  <span style={{ ...sidebarLabelStyle, color: isPro ? colors.pro : colors.primary, marginTop: 0 }}>PRICING {isPro && '(PRO)'} {primaryPricing.isNextYear && <span style={{ fontSize: '9px', color: colors.primary }}>— NEXT YEAR</span>}</span>
+                  <p style={{ margin: '4px 0', fontSize: '18px', fontWeight: '700', color: colors.dark }}>£{hasSiblings ? priceInfo.total?.toFixed(2) : primaryPricing.annual}</p>
+                  <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>{primaryPricing.isNextYear ? '4' : '2'}x £{hasSiblings ? priceInfo.instalments3 : primaryPricing.instalments3} instalments</p>
+                  <p style={{ margin: '4px 0', fontSize: '11px', color: colors.success, fontWeight: '600' }}>Upfront (5% off): £{hasSiblings ? priceInfo.upfront : primaryPricing.upfront}</p>
+                  <p style={{ margin: '4px 0', fontSize: '11px', color: colors.darkGray }}>£{primaryPricing.pricePerHour}/lesson vs £50 tutor</p>
+                  <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>Monthly: £{primaryPricing.monthly}/mo</p>
+                </>
+              )}
             </div>
           )}
           <button onClick={copyLeadInfo} style={{ width: '100%', padding: '10px', background: colors.accent, border: 'none', color: colors.dark, cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: '700', fontSize: '11px', marginTop: '12px', borderRadius: 0 }}>{copied ? '✓ COPIED' : '📋 COPY NOTES'}</button>
@@ -619,7 +639,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
           {currentStep === 'clarify' && (<>
             <div style={sectionHeaderStyle}><h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800' }}>CLARIFY</h2><p style={{ margin: '4px 0 0 0', fontSize: '13px', opacity: 0.85 }}>Understand the Situation (2-3 min)</p></div>
             <div style={tipBoxStyle}><strong>🎯 GOAL:</strong> Get names, year groups, and subjects.</div>
-            <div style={scriptBoxStyle}><span style={labelStyle}>Get Child's Name</span><p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>"So first things first - who's the lucky one we're helping today? What's your child's name?"</p></div>
+            <div style={scriptBoxStyle}><span style={labelStyle}>Get Child's Name</span><p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>"So first things first - can you tell me your child's name and a little bit about them?"</p></div>
             <div style={scriptBoxStyle}><span style={labelStyle}>Siblings Check</span><p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>"And do you have any other children who might benefit from some support too?"</p></div>
             {hasSiblings && <div style={{ ...tipBoxStyle, background: colors.accent }}><strong>👨‍👩‍👧‍👦 Siblings added!</strong> 20% off less expensive package.</div>}
             <div style={scriptBoxStyle}><span style={labelStyle}>Confirm Year Group{hasSiblings ? 's' : ''}</span><p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>{hasSiblings ? `"Great. What year is ${displayName(children[0])} in? And ${displayName(children[1])}?"` : `"Great. What year is ${displayName(primaryChild)} in?"`}</p></div>
@@ -670,7 +690,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             <div style={scriptBoxStyle}>
               <span style={labelStyle}>Transition Into Discovery</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                "Okay, amazing. So that I can give you the most tailored advice for {displayName(primaryChild)}, can I ask you a few questions about what's been going on?"
+                "That's helpful, thank you. So that I can give you the most tailored advice for {displayName(primaryChild)}, can I ask you a few questions about what's been going on?"
               </p>
             </div>
             <div style={{ ...tipBoxStyle, background: colors.accent }}><strong>✓ Wait for "yes" / "of course" before asking questions</strong></div>
@@ -755,6 +775,59 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 )}
               </p>
             </div>
+            {(primaryChild.yearGroup === 'Year 12' || primaryChild.yearGroup === 'Year 13') && primaryChild.subjects.includes('English Literature') && (() => {
+              const otherSubjects = primaryChild.subjects.filter(s => s !== 'English Literature');
+              const hasOtherSubjects = otherSubjects.length > 0;
+              return (
+              <div style={{ ...scriptBoxStyle, background: '#f3e5f5', border: `2px solid #7b1fa2` }}>
+                <span style={{ ...labelStyle, color: '#7b1fa2' }}>ENGLISH LITERATURE — EXPLAIN TO PARENT</span>
+                {hasOtherSubjects ? (
+                  <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                    "I should mention — English Literature works a little differently from our other subjects. Because A-Level students study different texts depending on their school and exam board, we run a set programme covering the most popular texts.
+                    <br /><br />
+                    The great news is that <strong>English Literature is completely free</strong> — so {displayName(primaryChild)} would only be paying for {otherSubjects.join(' and ')}, and English Lit is added on top at no extra cost.
+                    <br /><br />
+                    The texts we currently cover are:"
+                  </p>
+                ) : (
+                  <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                    "So English Literature works a little differently at A-Level. Because students study different texts depending on their school and exam board, we run a set programme covering the most popular texts.
+                    <br /><br />
+                    <strong>It's completely free — there's no charge at all.</strong> If any of the texts overlap with what {displayName(primaryChild)} is studying, they can join those classes and get the full benefit.
+                    <br /><br />
+                    The texts we currently cover are:"
+                  </p>
+                )}
+                <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: '1px solid #7b1fa2' }}>
+                  <p style={{ margin: 0, fontSize: '13px', lineHeight: '1.8' }}>
+                    • <strong>The Handmaid's Tale</strong> — Margaret Atwood<br />
+                    • <strong>A Streetcar Named Desire</strong> — Tennessee Williams<br />
+                    • <strong>The Great Gatsby</strong> — F. Scott Fitzgerald<br />
+                    • <strong>Othello</strong> — William Shakespeare<br />
+                    • <strong>Poetry Anthology</strong> — Various Poets
+                  </p>
+                </div>
+                <p style={{ margin: '12px 0 0 0', fontSize: '14px', lineHeight: '1.8' }}>
+                  {hasOtherSubjects ? (
+                    <>
+                      "Does {displayName(primaryChild)} study any of those? If so, they'll get access to those classes for free alongside {otherSubjects.join(' and ')}."
+                    </>
+                  ) : (
+                    <>
+                      "Does {displayName(primaryChild)} study any of those? If there's overlap, they can start attending those classes straight away — completely free."
+                    </>
+                  )}
+                </p>
+                <div style={{ marginTop: '12px', padding: '10px', background: '#f3e5f5', border: `1px dashed #7b1fa2` }}>
+                  <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: '#7b1fa2' }}>SHARE AFTER CONFIRMATION — English Lit YouTube Channel:</p>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '13px', lineHeight: '1.6' }}>
+                    <strong>https://www.youtube.com/@MyEdSpace_English/playlists</strong>
+                  </p>
+                  <button onClick={() => { navigator.clipboard.writeText('https://www.youtube.com/@MyEdSpace_English/playlists').catch(() => {}); }} style={{ marginTop: '6px', padding: '4px 12px', background: '#7b1fa2', color: colors.white, border: 'none', fontSize: '11px', fontWeight: '700', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>COPY LINK</button>
+                </div>
+              </div>
+              );
+            })()}
             <div style={scriptBoxStyle}>
               <span style={labelStyle}>What Their Week Looks Like</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
@@ -766,7 +839,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 <br /><br />
                 On average, <strong>each student sends around 25 messages per lesson</strong> - that level of engagement is incomparable to a normal classroom.
                 <br /><br />
-                Does that make sense?"
+                Any questions on that before I continue?"
               </p>
             </div>
             <div style={{ ...scriptBoxStyle, borderLeft: `4px solid ${colors.primary}` }}>
@@ -784,7 +857,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             <div style={{ ...scriptBoxStyle, borderLeft: `4px solid ${colors.lightBlue}` }}>
               <span style={{ ...labelStyle, color: colors.primary }}>RECORDINGS</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                "Oh, and one more thing...
+                "There's one more thing families find really valuable...
                 <br /><br />
                 <strong>Every lesson is recorded</strong> and available instantly.
                 <br /><br />
@@ -792,7 +865,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 <br /><br />
                 Some kids actually prefer the recordings because they can pause and rewatch the tricky parts.
                 <br /><br />
-                Sound good so far?"
+                Any questions so far?"
               </p>
             </div>
             <div style={scriptBoxStyle}>
@@ -816,9 +889,9 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 <br /><br />
                 That's exactly why we have a <strong>14-day money-back guarantee</strong>. Two weeks to see if it clicks. If not, full refund, no hassle.
                 <br /><br />
-                But honestly? Most families don't need it. We have <strong>95% parent satisfaction</strong> and 1,700+ five-star reviews on Trustpilot.
+                In practice, very few families ever use it. We have <strong>95% parent satisfaction</strong> and 1,700+ five-star reviews on Trustpilot.
                 <br /><br />
-                <strong>So - how does all of that sound so far?</strong>"
+                <strong>Based on what you've told me about {displayName(primaryChild)}, how does this compare to what they're currently getting?</strong>"
               </p>
             </div>
           </>)}
@@ -1021,6 +1094,34 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
               </p>
             </div>
             )}
+            {primaryChild.yearGroup === 'Year 9' && primaryChild.subjects.includes('Science') && (
+              <div style={{ ...scriptBoxStyle, background: '#fff3e0', border: `1px solid ${colors.warning}` }}>
+                <span style={{ ...labelStyle, color: colors.warning }}>📋 YEAR 10: SCIENCE SPLITS INTO 3 SUBJECTS</span>
+                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                  "Just so you're aware — in Year 10, Science splits into <strong>Biology, Chemistry, and Physics</strong> as separate subjects. So when we set {displayName(primaryChild)} up for next year, they'll choose which science(s) to continue with.
+                  <br /><br />
+                  Which of the three is {displayName(primaryChild)} most interested in?"
+                </p>
+                {primaryPricing.subjectCount < 3 && (
+                  <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: `1px solid ${colors.warning}` }}>
+                    <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: colors.warning }}>PRICING IMPLICATIONS (rep reference — do not read out):</p>
+                    <p style={{ margin: '6px 0 0 0', fontSize: '12px', lineHeight: '1.8', color: colors.darkGray }}>
+                      Currently on <strong>{primaryPricing.subjectCount} subject{primaryPricing.subjectCount > 1 ? 's' : ''}</strong> pricing in Year 9. In Year 10, each science counts as its own subject:
+                      <br />• <strong>1 science{primaryPricing.subjectCount === 2 ? ' + their other subject' : ''}:</strong> stays on {primaryPricing.subjectCount} subject{primaryPricing.subjectCount > 1 ? 's' : ''} pricing — no change
+                      <br />• <strong>{primaryPricing.subjectCount === 1 ? '2 sciences' : '2 sciences + other subject (3 total)'}:</strong> {primaryPricing.subjectCount === 1 ? 'moves to 2 subjects pricing' : 'moves to Ultimate Pass pricing'}
+                      <br />• <strong>{primaryPricing.subjectCount === 1 ? '3 sciences or 2 sciences + another subject' : 'All 3 sciences + other subject'}:</strong> Ultimate Pass pricing
+                    </p>
+                  </div>
+                )}
+                {primaryPricing.subjectCount >= 3 && (
+                  <div style={{ marginTop: '12px', padding: '10px', background: '#e8f5e9', border: `1px solid ${colors.success}` }}>
+                    <p style={{ margin: 0, fontSize: '12px', color: colors.darkGray }}>
+                      ✓ Already on Ultimate Pass — science split has no pricing impact. This is just informational.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
             <div style={scriptBoxStyle}>
               <span style={labelStyle}>Guarantee</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
@@ -1111,7 +1212,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             <div style={{ ...scriptBoxStyle, background: '#fff8f0' }}>
               <span style={{ ...labelStyle, color: colors.warning }}>IF STILL HESITANT → £10 TRIAL</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                "Tell you what - try it for 10 days, just £10. Full access. No auto-renewal. Fair?"
+                "There's also an option to try it for 10 days for just £10. Full access, no auto-renewal — so there's no risk."
               </p>
             </div>
             <div style={{ ...scriptBoxStyle, background: colors.lightBlue, marginTop: '20px' }}>
@@ -1140,7 +1241,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             <div style={scriptBoxStyle}>
               <span style={labelStyle}>WHILE THEY PAY</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                "I'm happy to stay on the line while you register {displayName(primaryChild)} - it should only take 1 or 2 minutes and I can help answer any of your questions and confirm if we've received your payment. Sound good?"
+                "I'm happy to stay on the line while you register {displayName(primaryChild)} — it should only take a minute or two and I can confirm once we've received your payment."
               </p>
             </div>
             <div style={{ ...tipBoxStyle, background: colors.accent }}><strong>⏳ Wait for them to complete payment</strong></div>
@@ -1181,7 +1282,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
                   "I completely understand - it's an important decision. <strong>What would make this a yes for you?</strong>"
                   <br /><br />
-                  <strong>If vague:</strong> "Tell you what - why don't we do the £10 trial? That way you can try it properly, see how {hasSiblings ? 'the kids respond' : `${displayName(primaryChild)} responds`}, and then decide. No commitment beyond the £10."
+                  <strong>If vague:</strong> "We also have a £10 trial — 10 days, full access, no auto-renewal. That way you can see how {hasSiblings ? 'the children respond' : `${displayName(primaryChild)} responds`} before making any commitment."
                   <br /><br />
                   <strong>If fit concern:</strong> "That's what the 14-day guarantee is for. Try everything - if it's not working, full refund."
                 </p>
@@ -1193,7 +1294,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
                   "Completely understand. <strong>If this was completely up to you, would you have any hesitation?</strong>"
                   <br /><br />
-                  <strong>If no hesitation:</strong> "So you're sold - you just need them on board. What do you think they'd want to know?"
+                  <strong>If no hesitation:</strong> "It sounds like you're happy with what we offer — you just need them on board. What would they want to know?"
                   <br /><br />
                   <strong>If cost:</strong> "This is £{primaryPricing.monthly}/month versus £{primaryPricing.tutorCost} for tutoring. I can send all the details."
                   <br /><br />
