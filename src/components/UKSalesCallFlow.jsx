@@ -627,7 +627,6 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                   <p style={{ margin: '4px 0', fontSize: '18px', fontWeight: '700', color: colors.dark }}>£{hasSiblings ? priceInfo.total?.toFixed(2) : primaryPricing.annual}</p>
                   <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>{primaryPricing.isNextYear ? '4' : '2'}x £{hasSiblings ? priceInfo.instalments3 : primaryPricing.instalments3} instalments</p>
                   <p style={{ margin: '4px 0', fontSize: '11px', color: colors.success, fontWeight: '600' }}>Upfront (5% off): £{hasSiblings ? priceInfo.upfront : primaryPricing.upfront}</p>
-                  <p style={{ margin: '4px 0', fontSize: '11px', color: colors.darkGray }}>£{primaryPricing.pricePerHour}/lesson vs £50 tutor</p>
                   <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>Monthly: £{primaryPricing.monthly}/mo</p>
                 </>
               )}
@@ -907,14 +906,8 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             </div>
           </>)}
           {currentStep === 'close' && (<>
-            <div style={sectionHeaderStyle}><h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800' }}>CLOSE</h2><p style={{ margin: '4px 0 0 0', fontSize: '13px', opacity: 0.85 }}>Anchor → Value Stack → Ask</p></div>
+            <div style={sectionHeaderStyle}><h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800' }}>CLOSE</h2><p style={{ margin: '4px 0 0 0', fontSize: '13px', opacity: 0.85 }}>Programme → Pricing → Ask</p></div>
 
-            <div style={scriptBoxStyle}>
-              <span style={labelStyle}>Price Anchor</span>
-              <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                "Let me give you an idea of what this looks like. An average private tutor charges around £50 an hour. Two lessons a week{primaryPricing.subjectCount > 1 ? ` per subject - that's ${primaryPricing.subjectCount} subjects, so ${primaryPricing.subjectCount * 8} lessons a month` : ', that\'s 8 lessons a month'} - <strong>£{primaryPricing.subjectCount * 400} a month</strong> just for their time. No workbooks, no video solutions, no recordings."
-              </p>
-            </div>
             {isNextYearOffer(primaryChild.yearGroup) && (
               <div style={{ ...scriptBoxStyle, borderLeft: `4px solid ${colors.primary}`, background: '#f0f4ff' }}>
                 <span style={{ ...labelStyle, color: colors.primary }}>NEXT YEAR PROGRAMME — EARLY ACCESS RECOMMENDATION</span>
@@ -1118,17 +1111,13 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                       <>
                         The full programme would normally be valued at <strong>£{priceInfo.totalOriginal}</strong>. Because we recommend starting before September, access from now until the new academic year is included — the fee is <strong>£{priceInfo.total.toFixed(2)}</strong>.
                         <br /><br />
-                        That's £{(priceInfo.totalOriginal - priceInfo.total).toFixed(0)} less than the standard rate, and your children can start this week.
-                        <br /><br />
-                        That works out to <strong>£{primaryPricing.pricePerHour} per lesson</strong>, compared to around £50 for a private tutor."
+                        That's £{(priceInfo.totalOriginal - priceInfo.total).toFixed(0)} less than the standard rate, and your children can start this week."
                       </>
                     ) : (
                       <>
                         The full year's programme is valued at <strong>£{priceInfo.totalOriginal}</strong> — and even though you're joining partway through, your children still get access to every recorded lesson from the start of the year.
                         <br /><br />
-                        Because you're coming in partway through, it's just <strong>£{priceInfo.total.toFixed(2)}</strong> — saving you over £{(priceInfo.totalOriginal - priceInfo.total).toFixed(0)}.
-                        <br /><br />
-                        That's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
+                        Because you're coming in partway through, it's just <strong>£{priceInfo.total.toFixed(2)}</strong> — that's £{(priceInfo.totalOriginal - priceInfo.total).toFixed(0)} less than the full rate."
                       </>
                     )}
                   </>
@@ -1138,17 +1127,13 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                       <>
                         The full programme would normally be valued at <strong>£{primaryPricing.original}</strong>. Because we recommend starting before September, access from now until the new academic year is included — the fee is <strong>£{primaryPricing.annual}</strong>.
                         <br /><br />
-                        That's £{primaryPricing.saving} less than the standard rate, and {displayName(primaryChild)} can start this week.
-                        <br /><br />
-                        That works out to <strong>£{primaryPricing.pricePerHour} per lesson</strong>, compared to around £50 for a private tutor."
+                        That's £{primaryPricing.saving} less than the standard rate, and {displayName(primaryChild)} can start this week."
                       </>
                     ) : (
                       <>
                         The full year's programme is valued at <strong>£{primaryPricing.original}</strong> — and even though you're joining partway through, {displayName(primaryChild)} still gets access to every recorded lesson from the start of the year.
                         <br /><br />
-                        Because you're coming in partway through, it's just <strong>£{primaryPricing.annual}</strong> — saving you over £{primaryPricing.saving}.
-                        <br /><br />
-                        That's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
+                        Because you're coming in partway through, it's just <strong>£{primaryPricing.annual}</strong> — that's £{primaryPricing.saving} less than the full rate."
                       </>
                     )}
                   </>
