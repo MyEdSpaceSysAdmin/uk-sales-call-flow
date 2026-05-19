@@ -173,6 +173,8 @@ export default function UKSalesCallFlow() {
   const [showTrialPricing, setShowTrialPricing] = useState(false);
   const [showTrialObjections, setShowTrialObjections] = useState(false);
   const [copiedTrial, setCopiedTrial] = useState(null);
+  const [y10Interested, setY10Interested] = useState(null);
+  const [y10ScienceChoice, setY10ScienceChoice] = useState(null);
   const copyTrialText = (id, text) => {
     navigator.clipboard.writeText(text).then(() => {
       setCopiedTrial(id);
@@ -192,6 +194,8 @@ export default function UKSalesCallFlow() {
     setActiveObjection(null);
     setShowAllObjections(false);
     setShowSalesPricing(false);
+    setY10Interested(null);
+    setY10ScienceChoice(null);
   };
   const primaryChild = children[0];
   const hasSiblings = children.length > 1;
@@ -229,7 +233,11 @@ export default function UKSalesCallFlow() {
   const updateChild = (index, field, value) => {
     const updated = [...children];
     updated[index] = { ...updated[index], [field]: value };
-    if (field === 'yearGroup') updated[index].subjects = [];
+    if (field === 'yearGroup') {
+      updated[index].subjects = [];
+      if (index === 0) { setY10Interested(null); setY10ScienceChoice(null); }
+    }
+    if (field === 'subjects' && index === 0) setY10ScienceChoice(null);
     setChildren(updated);
   };
   const addSibling = () => setChildren([...children, { ...emptyChild }]);
@@ -241,19 +249,32 @@ export default function UKSalesCallFlow() {
   };
   const getPricing = (child) => {
     const yg = child.yearGroup;
-    // English Literature is free for Year 12/13 — don't count it toward pricing
     const paidSubjects = (yg === 'Year 12' || yg === 'Year 13') ? child.subjects.filter(s => s !== 'English Literature') : child.subjects;
-    const paidCount = paidSubjects.length || 1;
-    const displayCount = child.subjects.length || 1;
-    const nextYear = isNextYearOffer(yg);
+    let paidCount = paidSubjects.length || 1;
+    let displayCount = child.subjects.length || 1;
+    let nextYear = isNextYearOffer(yg);
+    let effectiveYg = yg;
+
+    if (yg === 'Year 9' && child === primaryChild) {
+      if (y10ScienceChoice && y10ScienceChoice !== 'Year 9 Only') {
+        const nonScienceCount = child.subjects.filter(s => s !== 'Science').length;
+        const scienceCounts = { 'Biology': 1, 'Chemistry': 1, 'Physics': 1, 'Bio+Chem': 2, 'Bio+Physics': 2, 'Chem+Physics': 2, 'UP': 3 };
+        paidCount = nonScienceCount + (scienceCounts[y10ScienceChoice] || 0);
+        displayCount = paidCount;
+        nextYear = true;
+        effectiveYg = 'Year 10';
+      } else if (y10Interested === false || y10ScienceChoice === 'Year 9 Only') {
+        nextYear = false;
+      }
+    }
 
     const priceTable = nextYear ? pricing.nextYear : pricing.currentYear;
     const tier = paidCount >= 3 ? 'ultimate' : paidCount;
     const tierData = priceTable[tier] || priceTable[1];
     const monthlyTier = tier === 'ultimate' || paidCount >= 3 ? 'ultimate' : tier;
     const monthlyPrice = pricing.monthly[monthlyTier] || pricing.monthly[1];
-    const lessons = getLessonsForYearGroup(yg, paidCount, nextYear);
-    const original = isPro ? getProOriginalPrice(yg, paidCount, nextYear) : getOriginalPrice(yg, paidCount, nextYear);
+    const lessons = getLessonsForYearGroup(effectiveYg, paidCount, nextYear);
+    const original = isPro ? getProOriginalPrice(effectiveYg, paidCount, nextYear) : getOriginalPrice(effectiveYg, paidCount, nextYear);
     const annual = tierData.annual;
     const phoneDiscount = annual * 0.95;
 
@@ -294,6 +315,23 @@ export default function UKSalesCallFlow() {
   const displayName = (child) => child.name || '[Child]';
   const priceInfo = getTotalPricing();
   const primaryPricing = getPricing(primaryChild);
+  const y10SubjectInfo = (() => {
+    if (primaryChild.yearGroup !== 'Year 9' || !y10ScienceChoice || y10ScienceChoice === 'Year 9 Only') return null;
+    const scienceLabels = {
+      'Biology': ['Biology'], 'Chemistry': ['Chemistry'], 'Physics': ['Physics'],
+      'Bio+Chem': ['Biology', 'Chemistry'], 'Bio+Physics': ['Biology', 'Physics'],
+      'Chem+Physics': ['Chemistry', 'Physics'], 'UP': ['Biology', 'Chemistry', 'Physics'],
+    };
+    const nonScienceSubjects = primaryChild.subjects.filter(s => s !== 'Science');
+    const sciences = scienceLabels[y10ScienceChoice] || [];
+    return { sciences, allSubjects: [...nonScienceSubjects, ...sciences] };
+  })();
+  const y9NeedsInput = primaryChild.yearGroup === 'Year 9' && primaryChild.subjects.length > 0 && (
+    y10Interested === null ||
+    (y10Interested === true && primaryChild.subjects.includes('Science') && !y10ScienceChoice)
+  );
+  const y9FallbackCount = primaryChild.subjects.length || 1;
+  const y9FallbackKey = y9FallbackCount >= 3 ? 'ultimate' : y9FallbackCount;
   const teacherInfo = getTeacherInfo(primaryChild);
   const copyLeadInfo = async () => {
     const childrenInfo = children.map((c, i) => {
@@ -610,7 +648,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                     <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>Monthly: £{primaryPricing.monthly}/mo</p>
                   </>
                 );
-              })() : primaryChild.yearGroup === 'Year 9' && primaryChild.subjects.includes('Science') && primaryPricing.subjectCount < 3 ? (
+              })() : primaryChild.yearGroup === 'Year 9' && primaryChild.subjects.includes('Science') && !y10ScienceChoice && y10Interested !== false && primaryPricing.subjectCount < 3 ? (
                 <>
                   <span style={{ ...sidebarLabelStyle, color: colors.warning, marginTop: 0 }}>Y10 PRICING {isPro && '(PRO)'}</span>
                   <p style={{ margin: '4px 0', fontSize: '11px', fontWeight: '700', color: colors.dark }}>
@@ -627,7 +665,6 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                   <p style={{ margin: '4px 0', fontSize: '18px', fontWeight: '700', color: colors.dark }}>£{hasSiblings ? priceInfo.total?.toFixed(2) : primaryPricing.annual}</p>
                   <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>{primaryPricing.isNextYear ? '4' : '2'}x £{hasSiblings ? priceInfo.instalments3 : primaryPricing.instalments3} instalments</p>
                   <p style={{ margin: '4px 0', fontSize: '11px', color: colors.success, fontWeight: '600' }}>Upfront (5% off): £{hasSiblings ? priceInfo.upfront : primaryPricing.upfront}</p>
-                  <p style={{ margin: '4px 0', fontSize: '11px', color: colors.darkGray }}>£{primaryPricing.pricePerHour}/lesson vs £50 tutor</p>
                   <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>Monthly: £{primaryPricing.monthly}/mo</p>
                 </>
               )}
@@ -907,82 +944,153 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             </div>
           </>)}
           {currentStep === 'close' && (<>
-            <div style={sectionHeaderStyle}><h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800' }}>CLOSE</h2><p style={{ margin: '4px 0 0 0', fontSize: '13px', opacity: 0.85 }}>Anchor → Value Stack → Ask</p></div>
+            <div style={sectionHeaderStyle}><h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800' }}>CLOSE</h2><p style={{ margin: '4px 0 0 0', fontSize: '13px', opacity: 0.85 }}>Programme → Pricing → Ask</p></div>
 
-            <div style={scriptBoxStyle}>
-              <span style={labelStyle}>Price Anchor</span>
-              <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                "Let me give you an idea of what this looks like. An average private tutor charges around £50 an hour. Two lessons a week{primaryPricing.subjectCount > 1 ? ` per subject - that's ${primaryPricing.subjectCount} subjects, so ${primaryPricing.subjectCount * 8} lessons a month` : ', that\'s 8 lessons a month'} - <strong>£{primaryPricing.subjectCount * 400} a month</strong> just for their time. No workbooks, no video solutions, no recordings."
-              </p>
-            </div>
-            {isNextYearOffer(primaryChild.yearGroup) && (
+            {isNextYearOffer(primaryChild.yearGroup) && primaryChild.yearGroup !== 'Year 9' && (
               <div style={{ ...scriptBoxStyle, borderLeft: `4px solid ${colors.primary}`, background: '#f0f4ff' }}>
-                <span style={{ ...labelStyle, color: colors.primary }}>NEXT YEAR PROGRAMME — EARLY ACCESS RECOMMENDATION</span>
+                <span style={{ ...labelStyle, color: colors.primary }}>NEXT YEAR PROGRAMME</span>
                 <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                  "What we always recommend is that students start as early as possible rather than waiting until September. From what we've seen, students who are already familiar with the platform, the teachers, and the routine by the time {primaryChild.yearGroup === 'Year 9' ? 'Year 10' : primaryChild.yearGroup === 'Year 10' ? 'Year 11' : primaryChild.yearGroup === 'Year 12' ? 'Year 13' : 'next year'} begins consistently perform better.
-                  <br /><br />
-                  So if you join the {primaryChild.yearGroup === 'Year 9' ? 'Year 10' : primaryChild.yearGroup === 'Year 10' ? 'Year 11' : primaryChild.yearGroup === 'Year 12' ? 'Year 13' : 'next year'} programme now, {displayName(primaryChild)} gets access to everything from now until September — that's built into the programme. They start lessons this week, get all the recordings, and are already set up for the new academic year."
+                  "We've found that students perform better when they join from the start of the academic year. So if you sign up for the {primaryChild.yearGroup === 'Year 10' ? 'Year 11' : primaryChild.yearGroup === 'Year 12' ? 'Year 13' : (() => { const num = parseInt(primaryChild.yearGroup.replace('Year ', '')); return `Year ${num + 1}`; })() } programme, {primaryChild.yearGroup} access is included for free from this week — {displayName(primaryChild)} can start straight away."
                 </p>
               </div>
             )}
-            {primaryChild.yearGroup === 'Year 9' && primaryChild.subjects.includes('Science') && primaryPricing.subjectCount < 3 && (
-              <div style={{ ...scriptBoxStyle, background: '#fff3e0', border: `2px solid ${colors.warning}` }}>
-                <span style={{ ...labelStyle, color: colors.warning }}>📋 YEAR 10: SCIENCE SPLITS — CONFIRM BEFORE PRICING</span>
+            {primaryChild.yearGroup === 'Year 9' && primaryChild.subjects.length > 0 && (<>
+              <div style={{ ...scriptBoxStyle, borderLeft: `4px solid ${colors.primary}`, background: '#f0f4ff' }}>
+                <span style={{ ...labelStyle, color: colors.primary }}>NEXT YEAR PROGRAMME</span>
                 <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                  "Now, one thing to be aware of for Year 10 — Science splits into <strong>Biology, Chemistry, and Physics</strong> as separate subjects. So for {displayName(primaryChild)}'s Year 10 programme, which sciences are they most interested in continuing with?"
+                  "We've found that students consistently perform better when they join from the start of the academic year. So what we recommend is signing up for the Year 10 programme — and Year 9 access is included for free from this week, so {displayName(primaryChild)} can get started straight away."
                 </p>
-                <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: `1px solid ${colors.warning}` }}>
-                  <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: colors.warning }}>YEAR 10 NEXT YEAR PRICING — BASED ON THEIR ANSWER {isPro && <span style={{ color: colors.pro }}>(PRO)</span>}:</p>
-                  <table style={{ width: '100%', marginTop: '8px', fontSize: '12px', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr style={{ borderBottom: '2px solid #ddd' }}>
-                        <th style={{ textAlign: 'left', padding: '4px 8px' }}></th>
-                        <th style={{ textAlign: 'center', padding: '4px 8px' }}>1 Subject</th>
-                        <th style={{ textAlign: 'center', padding: '4px 8px' }}>2 Subjects</th>
-                        <th style={{ textAlign: 'center', padding: '4px 8px', color: colors.primary }}>3+ (Ultimate)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr style={{ borderBottom: '1px solid #eee' }}>
-                        <td style={{ padding: '4px 8px', fontWeight: '700' }}>Price</td>
-                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? '609' : '419'}</td>
-                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? '974.40' : '754.20'}</td>
-                        <td style={{ textAlign: 'center', padding: '4px 8px', fontWeight: '700', color: colors.primary }}>£{isPro ? '1,309' : '989'}</td>
-                      </tr>
-                      <tr style={{ borderBottom: '1px solid #eee', color: colors.darkGray }}>
-                        <td style={{ padding: '4px 8px' }}>Was</td>
-                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? getProOriginalPrice('Year 10', 1, true) : getOriginalPrice('Year 10', 1, true)}</td>
-                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? getProOriginalPrice('Year 10', 2, true) : getOriginalPrice('Year 10', 2, true)}</td>
-                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? getProOriginalPrice('Year 10', 3, true) : getOriginalPrice('Year 10', 3, true)}</td>
-                      </tr>
-                      <tr style={{ borderBottom: '1px solid #eee' }}>
-                        <td style={{ padding: '4px 8px' }}>4x instalments</td>
-                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? (609/4).toFixed(2) : (419/4).toFixed(2)}</td>
-                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? (974.40/4).toFixed(2) : (754.20/4).toFixed(2)}</td>
-                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? (1309/4).toFixed(2) : (989/4).toFixed(2)}</td>
-                      </tr>
-                      <tr style={{ color: colors.success }}>
-                        <td style={{ padding: '4px 8px' }}>Upfront (5% off)</td>
-                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? (609*0.95).toFixed(2) : (419*0.95).toFixed(2)}</td>
-                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? (974.40*0.95).toFixed(2) : (754.20*0.95).toFixed(2)}</td>
-                        <td style={{ textAlign: 'center', padding: '4px 8px' }}>£{isPro ? (1309*0.95).toFixed(2) : (989*0.95).toFixed(2)}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <p style={{ margin: '8px 0 0 0', fontSize: '11px', color: colors.darkGray }}>
-                    Quote the column that matches what the parent chooses. Monthly: £{isPro ? '110' : '80'} / £{isPro ? '198' : '144'} / £{isPro ? '240' : '180'}
-                  </p>
+              </div>
+              <div style={{ ...scriptBoxStyle, background: '#e8f5e9', border: `2px solid ${colors.success}` }}>
+                <span style={{ ...labelStyle, color: colors.success }}>CHECK IN WITH PARENT</span>
+                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8', marginBottom: '12px' }}>
+                  <strong>"How does that sound — would you be interested in getting {displayName(primaryChild)} set up for Year 10?"</strong>
+                </p>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button onClick={() => { setY10Interested(true); setY10ScienceChoice(null); }} style={{ padding: '10px 24px', background: y10Interested === true ? colors.success : colors.white, color: y10Interested === true ? colors.white : colors.dark, border: `2px solid ${colors.success}`, cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: '700', fontSize: '13px', borderRadius: 0 }}>Yes — Interested</button>
+                  <button onClick={() => { setY10Interested(false); setY10ScienceChoice(null); }} style={{ padding: '10px 24px', background: y10Interested === false ? colors.darkGray : colors.white, color: y10Interested === false ? colors.white : colors.dark, border: `2px solid ${colors.darkGray}`, cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: '700', fontSize: '13px', borderRadius: 0 }}>No — Just This Year</button>
                 </div>
               </div>
-            )}
-            {primaryChild.yearGroup === 'Year 9' && primaryChild.subjects.includes('Science') && primaryPricing.subjectCount >= 3 && (
-              <div style={{ ...scriptBoxStyle, background: '#e8f5e9', border: `1px solid ${colors.success}` }}>
-                <span style={{ ...labelStyle, color: colors.success }}>📋 YEAR 10: SCIENCE SPLITS (No Pricing Impact)</span>
-                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                  "One thing to note — in Year 10, Science splits into Biology, Chemistry, and Physics. Since {displayName(primaryChild)} is on our Ultimate Pass, the pricing stays the same regardless of how many sciences they take. But which ones are they most interested in so we can get them set up?"
-                </p>
-              </div>
-            )}
+              {y10Interested === true && primaryChild.subjects.includes('Science') && (() => {
+                const nonScienceCount = primaryChild.subjects.filter(s => s !== 'Science').length;
+                const alwaysUltimate = nonScienceCount >= 2;
+                return (
+                <div style={{ ...scriptBoxStyle, background: alwaysUltimate ? '#e8f5e9' : '#fff3e0', border: `2px solid ${alwaysUltimate ? colors.success : colors.warning}` }}>
+                  <span style={{ ...labelStyle, color: alwaysUltimate ? colors.success : colors.warning }}>YEAR 10 — SCIENCE SPLITS INTO INDIVIDUAL SUBJECTS</span>
+                  <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                    {alwaysUltimate ? (
+                      <>
+                        "One thing to be aware of — in Year 10, Science splits into <strong>Biology, Chemistry, and Physics</strong> as individual subjects. Since {displayName(primaryChild)} is already taking {nonScienceCount} other subject{nonScienceCount > 1 ? 's' : ''}, the pricing stays the same on the Ultimate Pass regardless of how many sciences they choose.
+                        <br /><br />
+                        <strong>Which sciences is {displayName(primaryChild)} most interested in so we can get them set up?"</strong>
+                      </>
+                    ) : (
+                      <>
+                        "One thing to be aware of — in Year 10, Science splits into <strong>Biology, Chemistry, and Physics</strong> as individual subjects. Each one is treated separately, and the programme price depends on which ones {displayName(primaryChild)} wants to continue with.
+                        <br /><br />
+                        <strong>Which sciences is {displayName(primaryChild)} most interested in?"</strong>
+                      </>
+                    )}
+                  </p>
+                  <div style={{ marginTop: '14px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {['Biology', 'Chemistry', 'Physics', 'Bio+Chem', 'Bio+Physics', 'Chem+Physics', 'UP', 'Year 9 Only'].map(choice => {
+                      const isActive = y10ScienceChoice === choice;
+                      const isY9Only = choice === 'Year 9 Only';
+                      return (
+                        <button key={choice} onClick={() => setY10ScienceChoice(choice)} style={{ padding: '10px 16px', background: isActive ? (isY9Only ? colors.darkGray : colors.primary) : colors.white, color: isActive ? colors.white : (isY9Only ? colors.darkGray : colors.dark), border: `2px solid ${isActive ? (isY9Only ? colors.darkGray : colors.primary) : '#ddd'}`, cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: '600', fontSize: '12px', borderRadius: 0 }}>
+                          {choice === 'UP' ? 'All 3 (Ultimate)' : choice}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                ); })()}
+              {y10Interested === true && y10SubjectInfo && (
+                <div style={{ ...scriptBoxStyle, background: colors.accent, border: `2px solid ${colors.dark}` }}>
+                  <span style={{ ...labelStyle, color: colors.dark }}>OUR PRICE — YEAR 10 PROGRAMME {isPro && <span style={{ color: colors.pro }}>(PRO)</span>}</span>
+                  <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                    "So {displayName(primaryChild)}'s Year 10 programme will include <strong>{y10SubjectInfo.allSubjects.join(', ')}</strong> — that's <strong>{primaryPricing.subjectCount} subject{primaryPricing.subjectCount > 1 ? 's' : ''}</strong>.
+                    <br /><br />
+                    The full programme would normally be valued at <strong>£{primaryPricing.original}</strong>. Because we recommend starting before September, access from now until the new academic year is included — the fee is <strong>£{primaryPricing.annual}</strong>.
+                    <br /><br />
+                    That's £{primaryPricing.saving} less than the standard rate. Year 9 access starts this week at no extra cost."
+                  </p>
+                  <div style={{ marginTop: '12px', padding: '12px', background: colors.white, border: `1px solid ${colors.dark}` }}>
+                    <table style={{ width: '100%', fontSize: '13px', fontFamily: 'Inter, sans-serif', borderCollapse: 'collapse' }}>
+                      <tbody>
+                        <tr style={{ borderBottom: '1px solid #eee' }}>
+                          <td style={{ padding: '6px 0', fontWeight: '600' }}>Subjects</td>
+                          <td style={{ padding: '6px 0', textAlign: 'right' }}>{y10SubjectInfo.allSubjects.join(' + ')}</td>
+                        </tr>
+                        <tr style={{ borderBottom: '1px solid #eee' }}>
+                          <td style={{ padding: '6px 0', fontWeight: '600' }}>Annual Price</td>
+                          <td style={{ padding: '6px 0', textAlign: 'right', fontWeight: '700', fontSize: '16px' }}>£{primaryPricing.annual}</td>
+                        </tr>
+                        <tr style={{ borderBottom: '1px solid #eee' }}>
+                          <td style={{ padding: '6px 0', fontWeight: '600' }}>Was</td>
+                          <td style={{ padding: '6px 0', textAlign: 'right', textDecoration: 'line-through', color: colors.darkGray }}>£{primaryPricing.original}</td>
+                        </tr>
+                        <tr style={{ borderBottom: '1px solid #eee' }}>
+                          <td style={{ padding: '6px 0', fontWeight: '600' }}>4x Instalments</td>
+                          <td style={{ padding: '6px 0', textAlign: 'right' }}>£{primaryPricing.instalments3}</td>
+                        </tr>
+                        <tr style={{ borderBottom: '1px solid #eee' }}>
+                          <td style={{ padding: '6px 0', fontWeight: '600', color: colors.success }}>Upfront (5% off)</td>
+                          <td style={{ padding: '6px 0', textAlign: 'right', color: colors.success, fontWeight: '600' }}>£{primaryPricing.upfront}</td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: '6px 0', fontWeight: '600' }}>Monthly</td>
+                          <td style={{ padding: '6px 0', textAlign: 'right' }}>£{primaryPricing.monthly}/mo</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div style={{ marginTop: '8px', padding: '8px', background: '#e8f5e9', fontSize: '12px', fontWeight: '600', color: colors.success }}>Year 9 access included free from this week</div>
+                  </div>
+                </div>
+              )}
+              {y10ScienceChoice === 'Year 9 Only' && (
+                <div style={{ ...scriptBoxStyle, borderLeft: `4px solid ${colors.darkGray}` }}>
+                  <span style={{ ...labelStyle, color: colors.dark }}>OUR PRICE — YEAR 9 ONLY {isPro && <span style={{ color: colors.pro }}>(PRO)</span>}</span>
+                  <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                    "No problem at all. The Year 9 programme covers the rest of this academic year — {displayName(primaryChild)} gets access to all live lessons, recordings from the start of the year, workbooks, and homework with video solutions.
+                    <br /><br />
+                    The full year is valued at <strong>£{primaryPricing.original}</strong> — because you're joining partway through, it's just <strong>£{primaryPricing.annual}</strong>. That's £{primaryPricing.saving} less than the full rate."
+                  </p>
+                </div>
+              )}
+              {y10Interested === true && !primaryChild.subjects.includes('Science') && (
+                <div style={{ ...scriptBoxStyle, background: colors.accent, border: `2px solid ${colors.dark}` }}>
+                  <span style={{ ...labelStyle, color: colors.dark }}>OUR PRICE — YEAR 10 PROGRAMME {isPro && <span style={{ color: colors.pro }}>(PRO)</span>}</span>
+                  <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                    "So that includes everything we've discussed — the live lessons twice a week{primaryPricing.subjectCount > 1 ? ' per subject' : ''}, workbooks, homework with video solutions, recordings, and outside-of-the-lesson mentor support.
+                    <br /><br />
+                    The full programme would normally be valued at <strong>£{primaryPricing.original}</strong>. Because we recommend starting before September, access from now until the new academic year is included — the fee is <strong>£{primaryPricing.annual}</strong>.
+                    <br /><br />
+                    That's £{primaryPricing.saving} less than the standard rate. Year 9 access starts this week at no extra cost."
+                  </p>
+                </div>
+              )}
+              {y10Interested === false && (
+                <div style={{ ...scriptBoxStyle, borderLeft: `4px solid ${colors.darkGray}` }}>
+                  <span style={{ ...labelStyle, color: colors.dark }}>OUR PRICE — YEAR 9 {isPro && <span style={{ color: colors.pro }}>(PRO)</span>}</span>
+                  <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                    "Completely understand. Let's get {displayName(primaryChild)} set up for Year 9.
+                    <br /><br />
+                    That includes everything — live lessons twice a week{primaryPricing.subjectCount > 1 ? ' per subject' : ''}, workbooks, homework with video solutions, recordings, and mentor support.
+                    <br /><br />
+                    The full year is valued at <strong>£{primaryPricing.original}</strong> — because you're joining partway through, it's just <strong>£{primaryPricing.annual}</strong>. That's £{primaryPricing.saving} less than the full rate."
+                  </p>
+                </div>
+              )}
+              {!y9NeedsInput && (
+                <div style={{ ...scriptBoxStyle, background: '#f5f5f5', border: '1px solid #ddd' }}>
+                  <span style={{ ...labelStyle, color: colors.darkGray }}>TUTOR COMPARISON (optional — use if helpful)</span>
+                  <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                    "Just for context — a private 1-to-1 tutor typically charges around £50 per hour. For {primaryPricing.subjectCount} subject{primaryPricing.subjectCount > 1 ? 's' : ''} with two sessions per week each, that's around <strong>£{primaryPricing.tutorCost} per month</strong>. Our programme gives {displayName(primaryChild)} expert teaching, workbooks, homework with full video solutions, recordings of every lesson, and mentor support — all for significantly less."
+                  </p>
+                </div>
+              )}
+            </>)}
             {isExamYear(primaryChild.yearGroup) && (() => {
               const examPaidSubjects = primaryChild.yearGroup === 'Year 13' ? primaryChild.subjects.filter(s => s !== 'English Literature') : primaryChild.subjects;
               const examPaidCount = examPaidSubjects.length || 1;
@@ -1100,7 +1208,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 </>
               );
             })()}
-            {!isExamYear(primaryChild.yearGroup) && (
+            {!isExamYear(primaryChild.yearGroup) && !y9NeedsInput && primaryChild.yearGroup !== 'Year 9' && (
             <div style={{ ...scriptBoxStyle, borderLeft: `4px solid ${colors.accent}` }}>
               <span style={{ ...labelStyle, color: colors.dark }}>OUR PRICE {isPro && <span style={{ color: colors.pro }}>(PRO)</span>}</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
@@ -1118,17 +1226,13 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                       <>
                         The full programme would normally be valued at <strong>£{priceInfo.totalOriginal}</strong>. Because we recommend starting before September, access from now until the new academic year is included — the fee is <strong>£{priceInfo.total.toFixed(2)}</strong>.
                         <br /><br />
-                        That's £{(priceInfo.totalOriginal - priceInfo.total).toFixed(0)} less than the standard rate, and your children can start this week.
-                        <br /><br />
-                        That works out to <strong>£{primaryPricing.pricePerHour} per lesson</strong>, compared to around £50 for a private tutor."
+                        That's £{(priceInfo.totalOriginal - priceInfo.total).toFixed(0)} less than the standard rate, and your children can start this week."
                       </>
                     ) : (
                       <>
                         The full year's programme is valued at <strong>£{priceInfo.totalOriginal}</strong> — and even though you're joining partway through, your children still get access to every recorded lesson from the start of the year.
                         <br /><br />
-                        Because you're coming in partway through, it's just <strong>£{priceInfo.total.toFixed(2)}</strong> — saving you over £{(priceInfo.totalOriginal - priceInfo.total).toFixed(0)}.
-                        <br /><br />
-                        That's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
+                        Because you're coming in partway through, it's just <strong>£{priceInfo.total.toFixed(2)}</strong> — that's £{(priceInfo.totalOriginal - priceInfo.total).toFixed(0)} less than the full rate."
                       </>
                     )}
                   </>
@@ -1138,17 +1242,13 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                       <>
                         The full programme would normally be valued at <strong>£{primaryPricing.original}</strong>. Because we recommend starting before September, access from now until the new academic year is included — the fee is <strong>£{primaryPricing.annual}</strong>.
                         <br /><br />
-                        That's £{primaryPricing.saving} less than the standard rate, and {displayName(primaryChild)} can start this week.
-                        <br /><br />
-                        That works out to <strong>£{primaryPricing.pricePerHour} per lesson</strong>, compared to around £50 for a private tutor."
+                        That's £{primaryPricing.saving} less than the standard rate, and {displayName(primaryChild)} can start this week."
                       </>
                     ) : (
                       <>
                         The full year's programme is valued at <strong>£{primaryPricing.original}</strong> — and even though you're joining partway through, {displayName(primaryChild)} still gets access to every recorded lesson from the start of the year.
                         <br /><br />
-                        Because you're coming in partway through, it's just <strong>£{primaryPricing.annual}</strong> — saving you over £{primaryPricing.saving}.
-                        <br /><br />
-                        That's <strong>£{primaryPricing.pricePerHour} per lesson</strong> versus £50 for a tutor."
+                        Because you're coming in partway through, it's just <strong>£{primaryPricing.annual}</strong> — that's £{primaryPricing.saving} less than the full rate."
                       </>
                     )}
                   </>
@@ -1156,25 +1256,25 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
               </p>
             </div>
             )}
-            <div style={scriptBoxStyle}>
+            {!y9NeedsInput && <div style={scriptBoxStyle}>
               <span style={labelStyle}>Guarantee</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
                 "And remember - 14-day money-back guarantee. If it's not working, full refund, no questions asked."
               </p>
-            </div>
-            <div style={scriptBoxStyle}>
+            </div>}
+            {!y9NeedsInput && <div style={scriptBoxStyle}>
               <span style={labelStyle}>Ask (Assumptive Close)</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
                 "The next class for {displayName(primaryChild)} is [tomorrow/next week].
                 <br /><br /><strong>Should I get {hasSiblings ? allChildNames() : displayName(primaryChild)} set up so they can start this week?</strong>"
               </p>
-            </div>
-            <div style={{ ...warningBoxStyle, background: '#fff0f0', borderLeft: `4px solid #e53935` }}>
+            </div>}
+            {!y9NeedsInput && <div style={{ ...warningBoxStyle, background: '#fff0f0', borderLeft: `4px solid #e53935` }}>
               <strong>⚠️ When they say YES → STOP TALKING. Don't keep selling.</strong>
               <br /><br />
               "Great, let me send you the link to get {displayName(primaryChild)} enrolled."
-            </div>
-            {!isExamYear(primaryChild.yearGroup) && (
+            </div>}
+            {!isExamYear(primaryChild.yearGroup) && !y9NeedsInput && (
             <div style={{ ...scriptBoxStyle, background: colors.accent, marginTop: '20px' }}>
               <span style={{ ...labelStyle, color: colors.dark }}>IF YES → PAYMENT OPTIONS (A/B Close)</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
@@ -1182,44 +1282,34 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
               </p>
             </div>
             )}
-            {isNextYearOffer(primaryChild.yearGroup) && (
+            {primaryPricing.isNextYear && (
               <div style={{ ...scriptBoxStyle, background: '#e3f2fd', marginTop: '20px', border: `2px solid ${colors.primary}` }}>
                 <span style={{ ...labelStyle, color: colors.primary }}>IF HESITANT ABOUT NEXT YEAR → THIS YEAR ONLY</span>
-                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                  "I completely understand — that's a bigger commitment. We can also start with just the rest of this year for <strong>£{(() => {
-                    const currentYearPricing = isPro ? proPricing.currentYear : standardPricing.currentYear;
-                    const subjectKey = primaryPricing.subjectCount === 1 ? 1 : primaryPricing.subjectCount === 2 ? 2 : 'ultimate';
-                    return currentYearPricing[subjectKey]?.annual;
-                  })()}</strong>. That way {displayName(primaryChild)} gets the support they need right now, and you can always sign up for next year later."
-                </p>
-                <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: `1px solid ${colors.primary}` }}>
-                  <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: colors.primary }}>CURRENT YEAR PRICING ({primaryPricing.subjectCount} subject{primaryPricing.subjectCount > 1 ? 's' : ''}):</p>
-                  <p style={{ margin: '6px 0 0 0', fontSize: '13px', lineHeight: '1.8' }}>
-                    <strong>Total:</strong> £{(() => {
-                      const currentYearPricing = isPro ? proPricing.currentYear : standardPricing.currentYear;
-                      const subjectKey = primaryPricing.subjectCount === 1 ? 1 : primaryPricing.subjectCount === 2 ? 2 : 'ultimate';
-                      return currentYearPricing[subjectKey]?.annual;
-                    })()} <span style={{ color: colors.darkGray }}>(was £{(() => {
-                      const subjectCount = primaryPricing.subjectCount;
-                      return isPro ? getProOriginalPrice(primaryChild.yearGroup, subjectCount, false) : getOriginalPrice(primaryChild.yearGroup, subjectCount, false);
-                    })()})</span>
-                    <br />
-                    <strong>2 instalments:</strong> £{(() => {
-                      const currentYearPricing = isPro ? proPricing.currentYear : standardPricing.currentYear;
-                      const subjectKey = primaryPricing.subjectCount === 1 ? 1 : primaryPricing.subjectCount === 2 ? 2 : 'ultimate';
-                      return (currentYearPricing[subjectKey]?.annual / 2).toFixed(2);
-                    })()} each
-                    <br />
-                    <strong style={{ color: colors.success }}>Upfront (5% off):</strong> £{(() => {
-                      const currentYearPricing = isPro ? proPricing.currentYear : standardPricing.currentYear;
-                      const subjectKey = primaryPricing.subjectCount === 1 ? 1 : primaryPricing.subjectCount === 2 ? 2 : 'ultimate';
-                      return (currentYearPricing[subjectKey]?.annual * 0.95).toFixed(2);
-                    })()}
-                  </p>
-                </div>
+                {(() => {
+                  const cyPricing = isPro ? proPricing.currentYear : standardPricing.currentYear;
+                  const fbKey = primaryChild.yearGroup === 'Year 9' ? y9FallbackKey : (primaryPricing.subjectCount >= 3 ? 'ultimate' : primaryPricing.subjectCount);
+                  const fbCount = primaryChild.yearGroup === 'Year 9' ? y9FallbackCount : primaryPricing.subjectCount;
+                  const fbAnnual = cyPricing[fbKey]?.annual;
+                  const fbOrig = isPro ? getProOriginalPrice(primaryChild.yearGroup, fbCount, false) : getOriginalPrice(primaryChild.yearGroup, fbCount, false);
+                  return (<>
+                    <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
+                      "I completely understand — that's a bigger commitment. We can also start with just the rest of this year for <strong>£{fbAnnual}</strong>. That way {displayName(primaryChild)} gets the support they need right now, and you can always sign up for next year later."
+                    </p>
+                    <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: `1px solid ${colors.primary}` }}>
+                      <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: colors.primary }}>CURRENT YEAR PRICING ({fbCount} subject{fbCount > 1 ? 's' : ''}):</p>
+                      <p style={{ margin: '6px 0 0 0', fontSize: '13px', lineHeight: '1.8' }}>
+                        <strong>Total:</strong> £{fbAnnual} <span style={{ color: colors.darkGray }}>(was £{fbOrig})</span>
+                        <br />
+                        <strong>2 instalments:</strong> £{(fbAnnual / 2).toFixed(2)} each
+                        <br />
+                        <strong style={{ color: colors.success }}>Upfront (5% off):</strong> £{(fbAnnual * 0.95).toFixed(2)}
+                      </p>
+                    </div>
+                  </>);
+                })()}
               </div>
             )}
-            <div style={{ ...scriptBoxStyle, background: '#fafafa', marginTop: '20px' }}>
+            {!y9NeedsInput && <div style={{ ...scriptBoxStyle, background: '#fafafa', marginTop: '20px' }}>
               <span style={{ ...labelStyle, color: colors.darkGray }}>IF HESITANT → MONTHLY DOWNSELL</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
                 {hasSiblings ? (
@@ -1242,14 +1332,14 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                   </>
                 )}
               </p>
-            </div>
-            <div style={{ ...scriptBoxStyle, background: '#fff8f0' }}>
+            </div>}
+            {!y9NeedsInput && <div style={{ ...scriptBoxStyle, background: '#fff8f0' }}>
               <span style={{ ...labelStyle, color: colors.warning }}>IF STILL HESITANT → £10 TRIAL</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
                 "There's also an option to try it for 10 days for just £10. Full access, no auto-renewal — so there's no risk."
               </p>
-            </div>
-            <div style={{ ...scriptBoxStyle, background: colors.lightBlue, marginTop: '20px' }}>
+            </div>}
+            {!y9NeedsInput && <div style={{ ...scriptBoxStyle, background: colors.lightBlue, marginTop: '20px' }}>
               <span style={{ ...labelStyle, color: colors.dark }}>⚡ POWER CLOSES (if stuck)</span>
               <p style={{ margin: 0, fontSize: '13px', lineHeight: '2' }}>
                 <strong>1.</strong> "What would make this a yes for you?"<br />
@@ -1257,7 +1347,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 <strong>3.</strong> "Scale of 1-10, how interested? What gets you to 10?"<br />
                 <strong>4.</strong> "Best case: {hasSiblings ? 'the kids get' : `${displayName(primaryChild)} gets`} confident. Worst case: £10 trial. Which risk makes sense?"
               </p>
-            </div>
+            </div>}
           </>)}
           {currentStep === 'confirm' && (<>
             <div style={{ ...sectionHeaderStyle, background: colors.success }}><h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800' }}>PAYMENT CONFIRMATION</h2><p style={{ margin: '4px 0 0 0', fontSize: '13px', opacity: 0.85 }}>Stay on the line</p></div>
