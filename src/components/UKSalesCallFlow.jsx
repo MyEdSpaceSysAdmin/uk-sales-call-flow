@@ -189,7 +189,7 @@ export default function UKSalesCallFlow() {
   const [showTwoYear, setShowTwoYear] = useState(false);
   const [sidebarSubOverride, setSidebarSubOverride] = useState(null);
   const [y12UpsellCount, setY12UpsellCount] = useState(null);
-  const [twoYearY12Count, setTwoYearY12Count] = useState(null);
+  const [twoYearYr2Count, setTwoYearYr2Count] = useState(null);
   const copyTrialText = (id, text) => {
     navigator.clipboard.writeText(text).then(() => {
       setCopiedTrial(id);
@@ -215,7 +215,7 @@ export default function UKSalesCallFlow() {
     setShowTwoYear(false);
     setSidebarSubOverride(null);
     setY12UpsellCount(null);
-    setTwoYearY12Count(null);
+    setTwoYearYr2Count(null);
   };
   const primaryChild = children[0];
   const hasSiblings = children.length > 1;
@@ -255,7 +255,7 @@ export default function UKSalesCallFlow() {
     updated[index] = { ...updated[index], [field]: value };
     if (field === 'yearGroup') {
       updated[index].subjects = [];
-      if (index === 0) { setY10Interested(null); setY10ScienceChoice(null); setSidebarPriceView('nextYear'); setSidebarSubOverride(null); setY12UpsellCount(null); setTwoYearY12Count(null); }
+      if (index === 0) { setY10Interested(null); setY10ScienceChoice(null); setSidebarPriceView('nextYear'); setSidebarSubOverride(null); setY12UpsellCount(null); setTwoYearYr2Count(null); }
     }
     if (field === 'subjects' && index === 0) setY10ScienceChoice(null);
     setChildren(updated);
@@ -705,22 +705,31 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 (() => {
                   const isNonExam = !isExamYear(primaryChild.yearGroup);
                   const isY9 = primaryChild.yearGroup === 'Year 9';
+                  const isY8 = primaryChild.yearGroup === 'Year 8';
+                  const isY10 = primaryChild.yearGroup === 'Year 10';
                   const isY12 = primaryChild.yearGroup === 'Year 12';
                   const showToggle = isNonExam && (isY9 || !y9NeedsInput);
                   const hasTwoYearOption = isNonExam && !isY12;
                   const toggleOptions = hasTwoYearOption ? ['thisYear', 'nextYear', 'twoYear'] : ['thisYear', 'nextYear'];
                   const effectiveSidebarView = !hasTwoYearOption && sidebarPriceView === 'twoYear' ? 'nextYear' : sidebarPriceView;
                   const activeView = showToggle ? effectiveSidebarView : (primaryPricing.isNextYear ? 'nextYear' : 'thisYear');
-                  const needsSubPicker = isY9 && (activeView === 'nextYear' || activeView === 'twoYear');
-                  const paidSubjects = (primaryChild.yearGroup === 'Year 12' || primaryChild.yearGroup === 'Year 13') ? primaryChild.subjects.filter(s => s !== 'English Literature') : primaryChild.subjects;
-                  const sbCount = needsSubPicker ? (sidebarSubOverride || null) : (paidSubjects.length || 1);
-                  const sbTier = sbCount ? (sbCount >= 3 ? 'ultimate' : sbCount) : null;
+                  const paidSubjects = (isY12 || primaryChild.yearGroup === 'Year 13') ? primaryChild.subjects.filter(s => s !== 'English Literature') : primaryChild.subjects;
+                  const hasScienceNotUP = primaryChild.subjects.includes('Science') && !subjectsByYear[primaryChild.yearGroup]?.every(s => primaryChild.subjects.includes(s));
+                  const needsSubPicker = (isY9 && hasScienceNotUP && (activeView === 'nextYear' || activeView === 'twoYear'))
+                    || (isY8 && hasScienceNotUP && activeView === 'twoYear')
+                    || (isY10 && activeView === 'twoYear');
+
+                  const yr1Count = paidSubjects.length || 1;
+                  const yr1Tier = yr1Count >= 3 ? 'ultimate' : yr1Count;
                   const sbPricing = isPro ? proPricing : standardPricing;
+
+                  const isSplitTwoYear = needsSubPicker && activeView === 'twoYear' && (isY8 || isY10);
+                  const yr2Count = needsSubPicker ? (sidebarSubOverride || null) : yr1Count;
+                  const yr2Tier = yr2Count ? (yr2Count >= 3 ? 'ultimate' : yr2Count) : null;
 
                   let displayPrice, displayInstalments, displayInstalmentCount, displayUpfront, displayUpfrontLabel, showMonthly;
                   if (activeView === 'thisYear') {
-                    const cyCount = paidSubjects.length || 1;
-                    const cyTier = cyCount >= 3 ? 'ultimate' : cyCount;
+                    const cyTier = yr1Count >= 3 ? 'ultimate' : yr1Count;
                     const cyAnnual = sbPricing.currentYear[cyTier]?.annual;
                     displayPrice = cyAnnual;
                     displayInstalmentCount = 2;
@@ -728,22 +737,39 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                     displayUpfront = (cyAnnual * 0.95).toFixed(2);
                     displayUpfrontLabel = '5% off';
                     showMonthly = true;
-                  } else if (activeView === 'twoYear' && sbTier) {
-                    const tyAnnual = sbPricing.twoYear[sbTier]?.annual;
-                    displayPrice = tyAnnual;
-                    displayInstalmentCount = 6;
-                    displayInstalments = (tyAnnual / 6).toFixed(2);
-                    displayUpfront = (tyAnnual * 0.90).toFixed(2);
-                    displayUpfrontLabel = '10% off';
-                    showMonthly = false;
-                  } else if (activeView === 'nextYear' && sbTier) {
-                    const nyAnnual = sbPricing.nextYear[sbTier]?.annual;
-                    displayPrice = hasSiblings && !needsSubPicker ? priceInfo.total?.toFixed(2) : nyAnnual;
-                    displayInstalmentCount = 4;
-                    displayInstalments = hasSiblings && !needsSubPicker ? priceInfo.instalments3 : (nyAnnual / 4).toFixed(2);
-                    displayUpfront = hasSiblings && !needsSubPicker ? priceInfo.upfront : (nyAnnual * 0.95).toFixed(2);
-                    displayUpfrontLabel = '5% off';
-                    showMonthly = true;
+                  } else if (activeView === 'twoYear' && yr2Tier) {
+                    let tyAnnual;
+                    if (isSplitTwoYear && sidebarSubOverride) {
+                      tyAnnual = sbPricing.nextYear[yr1Tier].annual + sbPricing.twoYear[yr2Tier].annual - sbPricing.nextYear[yr2Tier].annual;
+                    } else if (!isSplitTwoYear) {
+                      const sameTier = yr1Count >= 3 ? 'ultimate' : yr1Count;
+                      tyAnnual = sbPricing.twoYear[sameTier]?.annual;
+                    } else {
+                      tyAnnual = null;
+                    }
+                    if (tyAnnual) {
+                      displayPrice = tyAnnual;
+                      displayInstalmentCount = 6;
+                      displayInstalments = (tyAnnual / 6).toFixed(2);
+                      displayUpfront = (tyAnnual * 0.90).toFixed(2);
+                      displayUpfrontLabel = '10% off';
+                      showMonthly = false;
+                    } else {
+                      displayPrice = null;
+                    }
+                  } else if (activeView === 'nextYear') {
+                    const nyTier = needsSubPicker ? yr2Tier : yr1Tier;
+                    if (nyTier) {
+                      const nyAnnual = sbPricing.nextYear[nyTier]?.annual;
+                      displayPrice = hasSiblings && !needsSubPicker ? priceInfo.total?.toFixed(2) : nyAnnual;
+                      displayInstalmentCount = 4;
+                      displayInstalments = hasSiblings && !needsSubPicker ? priceInfo.instalments3 : (nyAnnual / 4).toFixed(2);
+                      displayUpfront = hasSiblings && !needsSubPicker ? priceInfo.upfront : (nyAnnual * 0.95).toFixed(2);
+                      displayUpfrontLabel = '5% off';
+                      showMonthly = true;
+                    } else {
+                      displayPrice = null;
+                    }
                   } else {
                     displayPrice = null;
                   }
@@ -751,6 +777,13 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                   const subPickerBtn = (count, label) => (
                     <button onClick={() => setSidebarSubOverride(count)} style={{ flex: 1, padding: '3px 1px', border: sidebarSubOverride === count ? '2px solid ' + colors.primary : '1px solid #ccc', background: sidebarSubOverride === count ? '#e8f0fe' : colors.white, color: sidebarSubOverride === count ? colors.primary : colors.darkGray, cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: '700', fontSize: '9px', borderRadius: 0 }}>{label}</button>
                   );
+
+                  const showAllPrices = needsSubPicker && !sidebarSubOverride;
+                  const allPricesSource = activeView === 'twoYear'
+                    ? (isSplitTwoYear
+                      ? [1, 2, 3].map(n => { const t = n >= 3 ? 'ultimate' : n; return sbPricing.nextYear[yr1Tier].annual + sbPricing.twoYear[t].annual - sbPricing.nextYear[t].annual; })
+                      : [sbPricing.twoYear[1].annual, sbPricing.twoYear[2].annual, sbPricing.twoYear.ultimate.annual])
+                    : [sbPricing.nextYear[1].annual, sbPricing.nextYear[2].annual, sbPricing.nextYear.ultimate.annual];
 
                   return (
                     <>
@@ -765,30 +798,30 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                       )}
                       <span style={{ ...sidebarLabelStyle, color: isPro ? colors.pro : colors.primary, marginTop: 0 }}>PRICING {isPro && '(PRO)'} {activeView === 'thisYear' ? <span style={{ fontSize: '9px', color: colors.darkGray }}>— THIS YEAR</span> : activeView === 'twoYear' ? <span style={{ fontSize: '9px', color: '#6366f1' }}>— 2 YEAR</span> : <span style={{ fontSize: '9px', color: colors.primary }}>— NEXT YEAR</span>}</span>
                       {needsSubPicker && (
-                        <div style={{ display: 'flex', gap: '3px', margin: '6px 0' }}>
+                        <>
+                        <p style={{ margin: '2px 0', fontSize: '8px', color: colors.darkGray, fontStyle: 'italic' }}>{isY10 ? 'A-Level' : 'Y10 science'} subjects{isSplitTwoYear && ` (yr 2)`}</p>
+                        <div style={{ display: 'flex', gap: '3px', margin: '4px 0' }}>
                           {subPickerBtn(1, '1 sub')}
                           {subPickerBtn(2, '2 sub')}
                           {subPickerBtn(3, '3+')}
                         </div>
+                        </>
                       )}
-                      {needsSubPicker && !sidebarSubOverride ? (
+                      {showAllPrices ? (
                         <>
                           <p style={{ margin: '4px 0', fontSize: '11px', fontWeight: '700', color: colors.dark }}>
-                            {activeView === 'twoYear' ? (
-                              <>1 sub: £{sbPricing.twoYear[1].annual}<br />2 sub: £{sbPricing.twoYear[2].annual}<br />3+: £{sbPricing.twoYear.ultimate.annual}</>
-                            ) : (
-                              <>1 sub: £{sbPricing.nextYear[1].annual}<br />2 sub: £{sbPricing.nextYear[2].annual}<br />3+: £{sbPricing.nextYear.ultimate.annual}</>
-                            )}
+                            1 sub: £{allPricesSource[0]}<br />2 sub: £{allPricesSource[1]}<br />3+: £{allPricesSource[2]}
                           </p>
                           <p style={{ margin: '2px 0', fontSize: '9px', color: colors.darkGray }}>Pick subject count above for details</p>
-                          <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>Monthly: £{isPro ? '110' : '80'}/£{isPro ? '198' : '144'}/£{isPro ? '240' : '180'}</p>
+                          {activeView !== 'twoYear' && <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>Monthly: £{isPro ? '110' : '80'}/£{isPro ? '198' : '144'}/£{isPro ? '240' : '180'}</p>}
+                          {activeView === 'twoYear' && <p style={{ margin: '2px 0', fontSize: '9px', color: '#6366f1', fontWeight: '600' }}>No monthly option on 2-year</p>}
                         </>
                       ) : displayPrice ? (
                         <>
-                          <p style={{ margin: '4px 0', fontSize: '18px', fontWeight: '700', color: colors.dark }}>£{displayPrice}</p>
+                          <p style={{ margin: '4px 0', fontSize: '18px', fontWeight: '700', color: colors.dark }}>£{typeof displayPrice === 'number' ? displayPrice.toFixed(2) : displayPrice}</p>
                           <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>{displayInstalmentCount}x £{displayInstalments} instalments</p>
                           <p style={{ margin: '4px 0', fontSize: '11px', color: colors.success, fontWeight: '600' }}>Upfront ({displayUpfrontLabel}): £{displayUpfront}</p>
-                          {showMonthly && <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>Monthly: £{needsSubPicker ? (sbCount >= 3 ? (isPro ? '240' : '180') : sbCount === 2 ? (isPro ? '198' : '144') : (isPro ? '110' : '80')) : primaryPricing.monthly}/mo</p>}
+                          {showMonthly && <p style={{ margin: '2px 0', fontSize: '10px', color: colors.darkGray }}>Monthly: £{needsSubPicker ? (yr2Count >= 3 ? (isPro ? '240' : '180') : yr2Count === 2 ? (isPro ? '198' : '144') : (isPro ? '110' : '80')) : primaryPricing.monthly}/mo</p>}
                           {activeView === 'twoYear' && <p style={{ margin: '2px 0', fontSize: '9px', color: '#6366f1', fontWeight: '600' }}>No monthly option on 2-year</p>}
                         </>
                       ) : null}
@@ -1322,6 +1355,27 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                           <strong>"Should I get {displayName(primaryChild)} set up for Year 12 so they can start everything this week?"</strong>
                         </p>
                       </div>
+                      {y12UpsellCount && (() => {
+                        const y13Tier = y12UpsellCount >= 3 ? 'ultimate' : y12UpsellCount;
+                        const y13TwoYearPrice = pricing.twoYear[y13Tier]?.annual;
+                        const y13Anchor = isPro ? getProOriginalPrice('Year 12', y12UpsellCount, false, true) : getOriginalPrice('Year 12', y12UpsellCount, false, true);
+                        const y13Saving = Math.round(y13Anchor - y13TwoYearPrice);
+                        return (
+                        <div style={{ marginTop: '16px', padding: '12px', background: '#f8f6ff', border: '2px dashed #a78bfa' }}>
+                          <span style={{ ...labelStyle, color: '#6366f1' }}>EXTEND TO YEAR 13? (2-YEAR A-LEVEL PLAN)</span>
+                          <p style={{ margin: '6px 0 0 0', fontSize: '13px', lineHeight: '1.8' }}>
+                            "And if you'd like to cover the full A-Level journey — Year 12 <strong>and</strong> Year 13 — we offer a 2-year programme at <strong>£{y13TwoYearPrice}</strong> for {y12UpsellCount >= 3 ? '3+' : y12UpsellCount} subject{y12UpsellCount > 1 ? 's' : ''}. That would normally cost £{y13Anchor} — a saving of <strong>£{y13Saving}</strong>.
+                            <br /><br />
+                            That includes <strong>6 instalments of £{(y13TwoYearPrice / 6).toFixed(2)}</strong>, or <strong>10% off upfront at £{(y13TwoYearPrice * 0.90).toFixed(2)}</strong>. Plus everything this year is included free — main course and Exam Masterclass."
+                          </p>
+                          <div style={{ marginTop: '8px', padding: '8px', background: '#ede9fe', border: '1px solid #a78bfa' }}>
+                            <p style={{ margin: 0, fontSize: '13px', fontWeight: '700' }}>
+                              <strong>"Would you like to lock in the full 2-year A-Level rate, or start with just Year 12?"</strong>
+                            </p>
+                          </div>
+                        </div>
+                        );
+                      })()}
                     </div>
                     );
                   })()}
@@ -1403,18 +1457,42 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             </div>
             )}
             {primaryPricing.isNextYear && !y9NeedsInput && primaryChild.yearGroup !== 'Year 12' && (() => {
-              const isY10TwoYear = primaryChild.yearGroup === 'Year 10';
-              const twoYearSubCount = isY10TwoYear ? (twoYearY12Count || null) : (primaryChild.yearGroup === 'Year 9' && y10SubjectInfo ? primaryPricing.subjectCount : primaryPricing.subjectCount);
-              const twoYearTier = twoYearSubCount ? (twoYearSubCount >= 3 ? 'ultimate' : twoYearSubCount) : null;
-              const twoYearPrice = twoYearTier ? pricing.twoYear[twoYearTier]?.annual : null;
-              const effectiveYg = primaryChild.yearGroup === 'Year 9' ? 'Year 10' : primaryChild.yearGroup;
-              const twoYearAnchor = twoYearSubCount ? (isPro ? getProOriginalPrice(effectiveYg, twoYearSubCount, false, true) : getOriginalPrice(effectiveYg, twoYearSubCount, false, true)) : null;
-              const twoYearSaving = twoYearPrice && twoYearAnchor ? twoYearAnchor - twoYearPrice : null;
+              const yg = primaryChild.yearGroup;
+              const isY10Split = yg === 'Year 10';
+              const hasSciNotUP = primaryChild.subjects.includes('Science') && !subjectsByYear[yg]?.every(s => primaryChild.subjects.includes(s));
+              const isY8Split = yg === 'Year 8' && hasSciNotUP;
+              const needsSplitPicker = isY10Split || isY8Split;
+              const yr1Count = primaryPricing.subjectCount;
+              const yr1Tier = yr1Count >= 3 ? 'ultimate' : yr1Count;
+              const yr2Count = needsSplitPicker ? (twoYearYr2Count || null) : yr1Count;
+              const yr2Tier = yr2Count ? (yr2Count >= 3 ? 'ultimate' : yr2Count) : null;
+
+              let twoYearPrice, twoYearAnchor;
+              if (yr2Tier && needsSplitPicker && twoYearYr2Count) {
+                twoYearPrice = pricing.nextYear[yr1Tier].annual + pricing.twoYear[yr2Tier].annual - pricing.nextYear[yr2Tier].annual;
+                const getMonthly = (count) => {
+                  if (isPro) return count >= 3 ? 240 : count === 2 ? 198 : 110;
+                  return count >= 3 ? 180 : count === 2 ? 144 : 80;
+                };
+                const effectiveYg = yg === 'Year 9' ? 'Year 10' : yg;
+                const yr1Anchor = isPro ? getProOriginalPrice(effectiveYg, yr1Count, true, false) : getOriginalPrice(effectiveYg, yr1Count, true, false);
+                twoYearAnchor = yr1Anchor + getMonthly(yr2Count) * 10;
+              } else if (yr2Tier && !needsSplitPicker) {
+                twoYearPrice = pricing.twoYear[yr2Tier]?.annual;
+                const effectiveYg = yg === 'Year 9' ? 'Year 10' : yg;
+                twoYearAnchor = isPro ? getProOriginalPrice(effectiveYg, yr2Count, false, true) : getOriginalPrice(effectiveYg, yr2Count, false, true);
+              } else {
+                twoYearPrice = null;
+                twoYearAnchor = null;
+              }
+
+              const twoYearSaving = twoYearPrice && twoYearAnchor ? Math.round(twoYearAnchor - twoYearPrice) : null;
               const twoYearInstalment = twoYearPrice ? (twoYearPrice / 6).toFixed(2) : null;
               const twoYearUpfront = twoYearPrice ? (twoYearPrice * 0.90).toFixed(2) : null;
-              const nextYgNum = parseInt((primaryChild.yearGroup === 'Year 9' ? 'Year 10' : primaryChild.yearGroup).replace('Year ', ''));
+              const nextYgNum = parseInt((yg === 'Year 9' ? 'Year 10' : yg).replace('Year ', ''));
               const yearPlusOne = `Year ${nextYgNum + 1}`;
               const yearPlusTwo = `Year ${nextYgNum + 2}`;
+              const splitLabel = isY10Split ? 'A-Level' : 'Y10 science';
               return (
               <div style={{ marginTop: '20px' }}>
                 <button onClick={() => setShowTwoYear(!showTwoYear)} style={{ width: '100%', padding: '10px 16px', background: showTwoYear ? '#ede9fe' : '#f8f6ff', border: '2px dashed #a78bfa', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: '700', fontSize: '12px', color: '#6366f1', textAlign: 'left', borderRadius: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1423,27 +1501,40 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 </button>
                 {showTwoYear && (
                   <div style={{ background: '#f8f6ff', padding: '16px 20px', border: '2px dashed #a78bfa', borderTop: 'none' }}>
-                    {isY10TwoYear && (
+                    {needsSplitPicker && (
                       <>
                       <div style={{ padding: '10px 14px', background: '#fff3e0', border: '1px solid #ff9800', marginBottom: '12px' }}>
                         <p style={{ margin: 0, fontSize: '11px', fontWeight: '700', color: '#e65100' }}>NOTE FOR REPS:</p>
                         <p style={{ margin: '4px 0 0 0', fontSize: '12px', lineHeight: '1.6', color: '#bf360c' }}>
-                          The 2-year plan for Year 10 covers through to Year 12 (A-Levels). Parents have probably not decided what their child will do for Year 12, and may not even be sure they'll do A-Levels. <strong>Only offer this if the parent seems very willing and already knows their plans.</strong>
+                          {isY10Split
+                            ? <>The 2-year plan for Year 10 covers through to Year 12 (A-Levels). Parents have probably not decided what their child will do for Year 12, and may not even be sure they'll do A-Levels. <strong>Only offer this if the parent seems very willing and already knows their plans.</strong></>
+                            : <>The 2-year plan for Year 8 covers through to Year 10, where Science splits into Biology, Chemistry, and Physics. <strong>Only use this if the parent already has a sense of which sciences their child will take.</strong></>
+                          }
                         </p>
                       </div>
                       <div style={{ ...scriptBoxStyle, background: '#f8f6ff', border: 'none', padding: '0 0 12px 0', marginBottom: '12px' }}>
                         <span style={{ ...labelStyle, color: '#6366f1' }}>PROBING QUESTION</span>
                         <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                          "I know it's probably early days, but do you have a sense of what {displayName(primaryChild)} might study at A-Level? We do offer a 2-year plan with heavily discounted rates if you'd like to lock in a price now — and the <strong>14-day money-back guarantee still applies</strong>."
+                          {isY10Split
+                            ? <>"I know it's probably early days, but do you have a sense of what {displayName(primaryChild)} might study at A-Level? We do offer a 2-year plan with heavily discounted rates if you'd like to lock in a price now — and the <strong>14-day money-back guarantee still applies</strong>."</>
+                            : <>"When {displayName(primaryChild)} moves into Year 10, Science splits into Biology, Chemistry, and Physics. Do you have a sense of how many sciences they'd want to continue with? We offer a 2-year plan with significantly bigger savings — and the <strong>14-day money-back guarantee still applies</strong>."</>
+                          }
                         </p>
                       </div>
                       <div style={{ padding: '10px', background: colors.white, border: '1px solid #a78bfa', marginBottom: '12px' }}>
-                        <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: '#6366f1' }}>Year 12 A-Level subjects we offer:</p>
-                        <p style={{ margin: '6px 0 0 0', fontSize: '13px', lineHeight: '1.8' }}>Maths, Biology, Chemistry, Physics, Further Maths, English Literature</p>
-                        <p style={{ margin: '8px 0 0 0', fontSize: '11px', fontWeight: '700', color: colors.darkGray }}>How many Year 12 subjects?</p>
+                        {isY10Split && (
+                          <>
+                          <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: '#6366f1' }}>Year 12 A-Level subjects we offer:</p>
+                          <p style={{ margin: '6px 0 0 0', fontSize: '13px', lineHeight: '1.8' }}>Maths, Biology, Chemistry, Physics, Further Maths, English Literature</p>
+                          </>
+                        )}
+                        {isY8Split && (
+                          <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: '#6366f1' }}>How many sciences in Year 10?</p>
+                        )}
+                        <p style={{ margin: '8px 0 0 0', fontSize: '11px', fontWeight: '700', color: colors.darkGray }}>{isY10Split ? 'How many Year 12 subjects?' : 'Select Year 10 subject count'}</p>
                         <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
                           {[1, 2, 3].map(n => (
-                            <button key={n} onClick={() => setTwoYearY12Count(n)} style={{ flex: 1, padding: '8px 4px', border: twoYearY12Count === n ? '2px solid #6366f1' : '1px solid #ccc', background: twoYearY12Count === n ? '#ede9fe' : colors.white, color: twoYearY12Count === n ? '#6366f1' : colors.darkGray, cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: '700', fontSize: '12px', borderRadius: 0 }}>
+                            <button key={n} onClick={() => setTwoYearYr2Count(n)} style={{ flex: 1, padding: '8px 4px', border: twoYearYr2Count === n ? '2px solid #6366f1' : '1px solid #ccc', background: twoYearYr2Count === n ? '#ede9fe' : colors.white, color: twoYearYr2Count === n ? '#6366f1' : colors.darkGray, cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: '700', fontSize: '12px', borderRadius: 0 }}>
                               {n >= 3 ? '3+ subjects' : `${n} subject${n > 1 ? 's' : ''}`}
                             </button>
                           ))}
@@ -1451,13 +1542,13 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                       </div>
                       </>
                     )}
-                    {!isY10TwoYear && (
+                    {!needsSplitPicker && (
                     <div style={{ ...scriptBoxStyle, background: '#f8f6ff', border: 'none', padding: '0 0 12px 0', marginBottom: '12px' }}>
                       <span style={{ ...labelStyle, color: '#6366f1' }}>CONSULTATIVE SCRIPT</span>
                       <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
                         "If you'd like to plan ahead, we also offer a <strong>2-year programme</strong> covering both <strong>{yearPlusOne}</strong> and <strong>{yearPlusTwo}</strong>. Because it's a 2-year commitment, the savings are significantly larger — and you get a <strong>10% upfront discount instead of 5%</strong>.
                         <br /><br />
-                        For {displayName(primaryChild)}'s {twoYearSubCount} subject{twoYearSubCount > 1 ? 's' : ''}, two full years would normally cost <strong>£{twoYearAnchor}</strong>. The 2-year programme is <strong>£{twoYearPrice}</strong> — that's <strong>£{twoYearSaving} less</strong>.
+                        For {displayName(primaryChild)}'s {yr1Count} subject{yr1Count > 1 ? 's' : ''}, two full years would normally cost <strong>£{twoYearAnchor}</strong>. The 2-year programme is <strong>£{twoYearPrice}</strong> — that's <strong>£{twoYearSaving} less</strong>.
                         <br /><br />
                         You can spread that over up to <strong>6 instalments of £{twoYearInstalment}</strong>, or pay upfront at 10% off for <strong>£{twoYearUpfront}</strong>."
                       </p>
@@ -1465,26 +1556,43 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                     )}
                     {twoYearPrice && (
                     <>
-                    {isY10TwoYear && (
+                    {needsSplitPicker && (
                       <div style={{ ...scriptBoxStyle, background: '#f8f6ff', border: 'none', padding: '0 0 12px 0', marginBottom: '12px' }}>
                         <span style={{ ...labelStyle, color: '#6366f1' }}>CONSULTATIVE SCRIPT</span>
                         <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                          "For {twoYearSubCount} A-Level subject{twoYearSubCount > 1 ? 's' : ''}, two full academic years would normally cost <strong>£{twoYearAnchor}</strong>. The 2-year programme is <strong>£{twoYearPrice}</strong> — that's <strong>£{twoYearSaving} less</strong>. Because it's a 2-year commitment, you get a <strong>10% upfront discount instead of 5%</strong>.
+                          {isY10Split
+                            ? <>"For {yr1Count} subject{yr1Count > 1 ? 's' : ''} through Year 11 and {yr2Count} A-Level subject{yr2Count > 1 ? 's' : ''} in Year 12, two full academic years would normally cost <strong>£{twoYearAnchor}</strong>. The 2-year programme is <strong>£{twoYearPrice.toFixed(2)}</strong> — that's <strong>£{twoYearSaving} less</strong>.</>
+                            : <>"For {yr1Count} subject{yr1Count > 1 ? 's' : ''} in Year 9 and {yr2Count} science{yr2Count > 1 ? 's' : ''}{yr1Count > 1 ? ' plus other subjects' : ''} in Year 10, two years would normally cost <strong>£{twoYearAnchor}</strong>. The 2-year programme is <strong>£{twoYearPrice.toFixed(2)}</strong> — that's <strong>£{twoYearSaving} less</strong>.</>
+                          }
                           <br /><br />
-                          You can spread that over up to <strong>6 instalments of £{twoYearInstalment}</strong>, or pay upfront at 10% off for <strong>£{twoYearUpfront}</strong>."
+                          "You can spread that over up to <strong>6 instalments of £{twoYearInstalment}</strong>, or pay upfront at 10% off for <strong>£{twoYearUpfront}</strong>. Because it's a 2-year commitment, you get a <strong>10% upfront discount instead of 5%</strong>."
                         </p>
                       </div>
                     )}
                     <div style={{ padding: '12px', background: colors.white, border: '1px solid #a78bfa', marginBottom: '12px' }}>
                       <table style={{ width: '100%', fontSize: '13px', fontFamily: 'Inter, sans-serif', borderCollapse: 'collapse' }}>
                         <tbody>
+                          {needsSplitPicker && (
+                          <tr style={{ borderBottom: '1px solid #eee' }}>
+                            <td style={{ padding: '6px 0', fontWeight: '600' }}>Yr 1</td>
+                            <td style={{ padding: '6px 0', textAlign: 'right' }}>{yr1Count} sub{yr1Count > 1 ? 's' : ''} ({yearPlusOne})</td>
+                          </tr>
+                          )}
+                          {needsSplitPicker && (
+                          <tr style={{ borderBottom: '1px solid #eee' }}>
+                            <td style={{ padding: '6px 0', fontWeight: '600' }}>Yr 2</td>
+                            <td style={{ padding: '6px 0', textAlign: 'right' }}>{yr2Count} sub{yr2Count > 1 ? 's' : ''} ({yearPlusTwo})</td>
+                          </tr>
+                          )}
+                          {!needsSplitPicker && (
                           <tr style={{ borderBottom: '1px solid #eee' }}>
                             <td style={{ padding: '6px 0', fontWeight: '600' }}>Subjects</td>
-                            <td style={{ padding: '6px 0', textAlign: 'right' }}>{twoYearSubCount} subject{twoYearSubCount > 1 ? 's' : ''}{isY10TwoYear && ' (Year 12)'}</td>
+                            <td style={{ padding: '6px 0', textAlign: 'right' }}>{yr1Count} subject{yr1Count > 1 ? 's' : ''}</td>
                           </tr>
+                          )}
                           <tr style={{ borderBottom: '1px solid #eee' }}>
                             <td style={{ padding: '6px 0', fontWeight: '600' }}>2-Year Price</td>
-                            <td style={{ padding: '6px 0', textAlign: 'right', fontWeight: '700', fontSize: '16px', color: '#6366f1' }}>£{twoYearPrice}</td>
+                            <td style={{ padding: '6px 0', textAlign: 'right', fontWeight: '700', fontSize: '16px', color: '#6366f1' }}>£{typeof twoYearPrice === 'number' ? twoYearPrice.toFixed(2) : twoYearPrice}</td>
                           </tr>
                           <tr style={{ borderBottom: '1px solid #eee' }}>
                             <td style={{ padding: '6px 0', fontWeight: '600' }}>Was</td>
