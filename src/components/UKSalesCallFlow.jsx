@@ -957,6 +957,15 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             <div style={warningBoxStyle}><strong>⚠️ Don't just read the script.</strong> Use it as a base, but tailor it to this lead. Connect the key features back to {painPoints ? <><strong>"{painPoints}"</strong> — their words</> : 'their specific pain points (capture them in the sidebar)'}. The parent should feel like this presentation was built for them.</div>
 
             {primaryChild.yearGroup && primaryChild.yearGroup !== 'Other' && (<div style={{ background: colors.white, padding: '12px 16px', marginBottom: '16px', borderRadius: 0, display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', border: '1px solid #e0e0e0' }}><span style={{ fontSize: '12px', fontWeight: '700' }}>📅</span>{timetableLinks[primaryChild.yearGroup] && <a href={timetableLinks[primaryChild.yearGroup]} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: colors.primary, fontWeight: '600', textDecoration: 'none' }}>{primaryChild.yearGroup} Timetable →</a>}{primaryChild.subjects.map(subj => (curriculumLinks[primaryChild.yearGroup]?.[subj] && <a key={subj} href={curriculumLinks[primaryChild.yearGroup][subj]} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: colors.primary, fontWeight: '600', textDecoration: 'none' }}>{subj} Curriculum →</a>))}</div>)}
+            {hasSiblings && children.slice(1).map((sib, idx) => (
+              sib.yearGroup && sib.yearGroup !== 'Other' && sib.subjects.length > 0 && (
+                <div key={`sib-links-${idx}`} style={{ background: colors.white, padding: '12px 16px', marginBottom: '16px', borderRadius: 0, display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', border: '1px solid #e0e0e0' }}>
+                  <span style={{ fontSize: '12px', fontWeight: '700' }}>📅 {sib.name || `Sibling ${idx + 1}`}</span>
+                  {timetableLinks[sib.yearGroup] && <a href={timetableLinks[sib.yearGroup]} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: colors.primary, fontWeight: '600', textDecoration: 'none' }}>{sib.yearGroup} Timetable →</a>}
+                  {sib.subjects.map(subj => (curriculumLinks[sib.yearGroup]?.[subj] && <a key={subj} href={curriculumLinks[sib.yearGroup][subj]} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: colors.primary, fontWeight: '600', textDecoration: 'none' }}>{subj} Curriculum →</a>))}
+                </div>
+              )
+            ))}
 
             <div style={scriptBoxStyle}>
               <span style={labelStyle}>Bridge From Pain</span>
@@ -1223,7 +1232,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 <div style={{ ...scriptBoxStyle, background: colors.accent, border: `2px solid ${colors.dark}` }}>
                   <span style={{ ...labelStyle, color: colors.dark }}>OUR PRICE — YEAR 10 PROGRAMME {isPro && <span style={{ color: colors.pro }}>(PRO)</span>}</span>
                   <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                    "So that includes everything we've discussed — the live lessons twice a week{primaryPricing.subjectCount > 1 ? ' per subject' : ''}, workbooks, homework with video solutions, recordings, and outside-of-the-lesson mentor support.
+                    "So that includes everything we've discussed — the live lessons twice a week{primaryPricing.subjectCount > 1 ? ' per subject' : ''}, workbooks, homework with video solutions, and recordings of every lesson.
                     <br /><br />
                     The full programme would normally be valued at <strong>£{primaryPricing.original}</strong>. Because we recommend starting before September, access from now until the new academic year is included — the fee is <strong>£{primaryPricing.annual}</strong>.
                     <br /><br />
@@ -1237,7 +1246,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                   <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
                     "Completely understand. Let's get {displayName(primaryChild)} set up for Year 9.
                     <br /><br />
-                    That includes everything — live lessons twice a week{primaryPricing.subjectCount > 1 ? ' per subject' : ''}, workbooks, homework with video solutions, recordings, and mentor support.
+                    That includes everything — live lessons twice a week{primaryPricing.subjectCount > 1 ? ' per subject' : ''}, workbooks, homework with video solutions, and recordings of every lesson.
                     <br /><br />
                     The full year is valued at <strong>£{primaryPricing.original}</strong> — because you're joining partway through, it's just <strong>£{primaryPricing.annual}</strong>. That's £{primaryPricing.saving} less than the full rate."
                   </p>
@@ -1247,7 +1256,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                 <div style={{ ...scriptBoxStyle, background: '#f5f5f5', border: '1px solid #ddd' }}>
                   <span style={{ ...labelStyle, color: colors.darkGray }}>TUTOR COMPARISON (optional — use if helpful)</span>
                   <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                    "Just for context — a private 1-to-1 tutor typically charges around £50 per hour. For {primaryPricing.subjectCount} subject{primaryPricing.subjectCount > 1 ? 's' : ''} with two sessions per week each, that's around <strong>£{primaryPricing.tutorCost} per month</strong>. Our programme gives {displayName(primaryChild)} expert teaching, workbooks, homework with full video solutions, recordings of every lesson, and mentor support — all for significantly less."
+                    "Just for context — a private 1-to-1 tutor typically charges around £50 per hour. For {primaryPricing.subjectCount} subject{primaryPricing.subjectCount > 1 ? 's' : ''} with two sessions per week each, that's around <strong>£{primaryPricing.tutorCost} per month</strong>. Our programme gives {displayName(primaryChild)} expert teaching, workbooks, homework with full video solutions, and recordings of every lesson — all for significantly less."
                   </p>
                 </div>
               )}
@@ -1290,7 +1299,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
                     <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
                       "And just so you know — the only difference between the Masterclass and our <strong>full course</strong> is that with the full course, {displayName(primaryChild)} also gets access to <strong>all the recorded lessons from the start of the year</strong>.
                       <br /><br />
-                      Plus workbooks, homework after every lesson with full video solutions, and outside-of-the-lesson mentor support."
+                      Plus workbooks, homework after every lesson with full video solutions, and recordings of every lesson."
                     </p>
                     <div style={{ marginTop: '12px', padding: '10px', background: colors.white, border: `1px solid ${colors.primary}` }}>
                       <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: colors.primary }}>FULL COURSE PRICING ({examPaidCount} subject{examPaidCount > 1 ? 's' : ''}) {isPro && <span style={{ color: colors.pro }}>(PRO)</span>}:</p>
@@ -1386,7 +1395,7 @@ ${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}`;
             <div style={{ ...scriptBoxStyle, borderLeft: `4px solid ${colors.accent}` }}>
               <span style={{ ...labelStyle, color: colors.dark }}>OUR PRICE {isPro && <span style={{ color: colors.pro }}>(PRO)</span>}</span>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
-                "So that includes everything we've discussed — the live lessons twice a week{primaryPricing.subjectCount > 1 ? ' per subject' : ''}, workbooks, homework with video solutions, recordings, and outside-of-the-lesson mentor support.
+                "So that includes everything we've discussed — the live lessons twice a week{primaryPricing.subjectCount > 1 ? ' per subject' : ''}, workbooks, homework with video solutions, and recordings of every lesson.
                 <br /><br />
                 {hasSiblings ? (
                   <>
